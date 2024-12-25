@@ -98,9 +98,37 @@ body {
   font-weight: 500;
 }
 
-.sizes-text {
+.precios-container {
+  background-color: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.precios-container div {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.precios-container strong {
   color: #64748b;
 }
+
+.additional-size-row {
+  background-color: #f8fafc;
+}
+
+.additional-size-row td {
+  border-top: 1px dashed #e2e8f0;
+}
+
+.my-1 {
+  margin: 4px 0;
+}
+/* .sizes-text {
+  color: #64748b;
+} */
 
 @media (max-width: 768px) {
   .search-container {
