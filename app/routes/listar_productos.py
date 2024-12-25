@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, render_template
-from app.services.productos import obtener_productos
+from app.services.listar_productos import obtener_productos
 
 productos_bp = Blueprint('productos', __name__)
 
@@ -14,6 +14,6 @@ def listar_productos():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@productos_bp.route('/view', methods=['GET'])
+@productos_bp.route('', methods=['GET'])  # Cambiar la ruta aquí
 def vista_productos():
     return render_template('listar_productos.html')

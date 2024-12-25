@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vanels - Sistema de Inventario</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/home.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo-container">
+        <img class="logo" src="/static/images/Vanels.jpg" alt="Vanels Logo" />
+      </div>
+
+      <h1 class="main-title">Sistema de Inventario</h1>
+
+      <div class="row g-3 justify-content-center">
+        <!-- Agregar Producto -->
+        <div class="col-md-6 col-lg-3">
+          <a href="/agregar_producto" class="card-link">
+            <div class="card p-3">
+              <div class="icon-container">
+                <span>+</span>
+              </div>
+              <div class="card-body text-center p-2">
+                <h5 class="card-title">Agregar Producto</h5>
+                <p class="card-text">Registra nuevos productos</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Listar Productos -->
+        <div class="col-md-6 col-lg-3">
+          <a href="/listar_productos" class="card-link">
+            <div class="card p-3">
+              <div class="icon-container">
+                <span>≣</span>
+              </div>
+              <div class="card-body text-center p-2">
+                <h5 class="card-title">Listar Productos</h5>
+                <p class="card-text">Ver inventario actual</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Reportes -->
+        <div class="col-md-6 col-lg-3">
+          <a href="/reportes" class="card-link">
+            <div class="card p-3">
+              <div class="icon-container">
+                <span>📊</span>
+              </div>
+              <div class="card-body text-center p-2">
+                <h5 class="card-title">Reportes</h5>
+                <p class="card-text">Ver estadísticas</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Configuración -->
+        <div class="col-md-6 col-lg-3">
+          <a href="/configuracion" class="card-link">
+            <div class="card p-3">
+              <div class="icon-container">
+                <span>⚙️</span>
+              </div>
+              <div class="card-body text-center p-2">
+                <h5 class="card-title">Configuración</h5>
+                <p class="card-text">Ajustar sistema</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
