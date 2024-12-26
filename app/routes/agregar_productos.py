@@ -1,11 +1,11 @@
-from flask import Blueprint, jsonify, render_template
-from app.services.agregar_productos import (obtener_datos_generales, obtener_tallas_por_marca)
+from flask import Blueprint, jsonify, render_template, request
+from app.services.agregar_productos import (obtener_datos_generales, obtener_tallas_por_marca, guardar_productos)
 
 # Blueprint
-agregar_productos_bp = Blueprint('agregar_producto', __name__, url_prefix='/agregar_producto')
+agregar_productos_bp = Blueprint('agregar_productos', __name__, url_prefix='/agregar_productos')
 
 @agregar_productos_bp.route('/')
-def agregar_producto():
+def agregar_productos():
     return render_template('agregar_productos.html')
 
 @agregar_productos_bp.route('/obtener_datos', methods=['GET'])
@@ -29,3 +29,17 @@ def obtener_tallas_por_marca_endpoint(id_marca):
         return jsonify({'success': True, 'tallas_por_rango': resultado})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+    
+@agregar_productos_bp.route('/guardar_productos', methods=['POST'])
+def guardar_producto():
+    """
+    Ruta para guardar un producto y toda su información relacionada.
+    """
+    try:
+        data = request.json  # Obtener datos del cliente
+        resultado = guardar_productos(data)  # Delegar lógica al servicio
+        return jsonify({'success': True, **resultado})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+    

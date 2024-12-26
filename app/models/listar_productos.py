@@ -10,6 +10,16 @@ class MarcaRangoTalla(db.Model):
     id_marca = db.Column('ID_MARCA', db.Integer, db.ForeignKey('MARCA.ID_MARCA'), nullable=False)
     id_rango_edad = db.Column('ID_RANGO_EDAD', db.Integer, nullable=False)
 
+# class ProductoStock(db.Model):
+#     __tablename__ = 'PRODUCTO_STOCK'
+
+#     id = db.Column('ID_PRODUCTO_STOCK', db.Integer, primary_key=True)
+#     id_producto = db.Column('ID_PRODUCTO', db.Integer, db.ForeignKey('PRODUCTOS.ID_PRODUCTO'), nullable=False)
+#     id_marca_rango_talla = db.Column('ID_MARCA_RANGO_TALLA', db.Integer, db.ForeignKey('MARCA_RANGO_TALLA.ID_MARCA_RANGO_TALLA'), nullable=False)
+#     cantidad = db.Column('CANTIDAD', db.Integer, default=0)
+
+#     talla = db.relationship('MarcaRangoTalla', backref='producto_stock', lazy=True)
+
 class ProductoStock(db.Model):
     __tablename__ = 'PRODUCTO_STOCK'
 
@@ -17,8 +27,10 @@ class ProductoStock(db.Model):
     id_producto = db.Column('ID_PRODUCTO', db.Integer, db.ForeignKey('PRODUCTOS.ID_PRODUCTO'), nullable=False)
     id_marca_rango_talla = db.Column('ID_MARCA_RANGO_TALLA', db.Integer, db.ForeignKey('MARCA_RANGO_TALLA.ID_MARCA_RANGO_TALLA'), nullable=False)
     cantidad = db.Column('CANTIDAD', db.Integer, default=0)
+    precio_promedio = db.Column('PRECIO_PROMEDIO', db.Float, nullable=False, default=0.0)  
 
     talla = db.relationship('MarcaRangoTalla', backref='producto_stock', lazy=True)
+
 
 class Producto(db.Model):
     __tablename__ = 'PRODUCTOS'
@@ -71,6 +83,16 @@ class Marca(db.Model):
     id = db.Column('ID_MARCA', db.Integer, primary_key=True)
     nombre = db.Column('NOMBRE', db.String(100), nullable=False)
 
+# class PrecioVenta(db.Model):
+#     __tablename__ = 'PRECIO_VENTA'
+
+#     id = db.Column('ID_PRECIO_VENTA', db.Integer, primary_key=True)
+#     id_producto = db.Column('ID_PRODUCTO', db.Integer, db.ForeignKey('PRODUCTOS.ID_PRODUCTO'), nullable=False)
+#     precio_retail = db.Column('PRECIO_RETAIL', db.Float, nullable=False)
+#     precio_regular = db.Column('PRECIO_REGULAR', db.Float, nullable=False)
+#     precio_online = db.Column('PRECIO_ONLINE', db.Float, nullable=False)
+
+
 class PrecioVenta(db.Model):
     __tablename__ = 'PRECIO_VENTA'
 
@@ -79,3 +101,7 @@ class PrecioVenta(db.Model):
     precio_retail = db.Column('PRECIO_RETAIL', db.Float, nullable=False)
     precio_regular = db.Column('PRECIO_REGULAR', db.Float, nullable=False)
     precio_online = db.Column('PRECIO_ONLINE', db.Float, nullable=False)
+    precio_promocion = db.Column('PRECIO_PROMOCION', db.Float, nullable=True)  # Agregar este campo
+    fecha_ini_promocion = db.Column('FECHA_INI_PROMOCION', db.DateTime, nullable=True)
+    fecha_fin_promocion = db.Column('FECHA_FIN_PROMOCION', db.DateTime, nullable=True)
+    flag_activo = db.Column('FLAG_ACTIVO', db.Integer, nullable=True, default=1)

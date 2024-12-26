@@ -97,7 +97,7 @@ function llenarSelectores(data) {
     });
 }
 
-// Función para manejar la petición de /agregar_producto/obtener_datos e inicializar datos
+// Función para manejar la petición de /agregar_productos/obtener_datos e inicializar datos
 async function inicializarDatosTallas() {
     // Antes limpiabas tallasData, pero ya no es necesario hacerlo aquí
     // (lo harás cuando el usuario elija la marca).
