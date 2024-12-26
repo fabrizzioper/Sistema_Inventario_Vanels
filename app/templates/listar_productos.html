@@ -14,9 +14,18 @@
     />
   </head>
   <body>
-    <div class="container py-4">
+    <div class="main-container">
+      <!-- Botón de atrás -->
+      <a href="/" class="back-button">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+        </svg>
+        Home
+      </a>
+
       <h1 class="page-title text-center">Lista de productos</h1>
       <!-- Search Section -->
+
       <div class="search-container">
         <div class="row g-3">
           <div class="col-12 col-md-4">
@@ -51,12 +60,16 @@
           </div>
         </div>
       </div>
+
+
+      
       <div class="products-table">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead class="bg-light">
               <tr style="text-align: center">
                 <th scope="col">Imagen</th>
+                <th scope="col">Código</th>
                 <th scope="col">Modelo</th>
                 <th scope="col">Marca</th>
                 <th scope="col">Precio Retail</th>

@@ -3,12 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const buscarInput = document.querySelector(".search-container input");
   const columnaSelect = document.querySelector(".search-container select");
   const buscarButton = document.querySelector(".btn-search");
-  const limpiarButton = document.getElementById("limpiar-btn"); // Botón de limpiar
+  const limpiarButton = document.getElementById("limpiar-btn");
 
   let productos = []; // Para almacenar los productos obtenidos
 
   // Lista de columnas para llenar dinámicamente el select
   const columnas = [
+    { value: "codigo", label: "Código" },
     { value: "nombre", label: "Modelo" },
     { value: "marca", label: "Marca" },
     { value: "precio_retail", label: "Precio Retail" },
@@ -49,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
             style="max-width: 150px; height: auto;"
           />
         </td>
+        <td rowspan="${producto.tallas.length}">${producto.codigo || "N/A"}</td>
         <td rowspan="${producto.tallas.length}">${producto.nombre}</td>
         <td rowspan="${producto.tallas.length}">${producto.marca}</td>
         <td rowspan="${producto.tallas.length}">${producto.precios.retail ? `S/${producto.precios.retail}` : "N/A"}</td>
@@ -82,8 +84,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Función para filtrar productos
-  function filtrarProductos() {
+  // Filtrar productos en tiempo real por todas las columnas
+  function filtrarPorTodasLasColumnas() {
+    const query = buscarInput.value.toLowerCase();
+
+    if (!query) {
+      renderProductos(productos); // Si no hay filtro, mostrar todo
+      return;
+    }
+
+    const productosFiltrados = productos.filter((producto) => {
+      return (
+        producto.codigo.toLowerCase().includes(query) ||
+        producto.nombre.toLowerCase().includes(query) ||
+        producto.marca.toLowerCase().includes(query) ||
+        (producto.precios.retail?.toString().includes(query)) ||
+        (producto.precios.regular?.toString().includes(query)) ||
+        (producto.precios.online?.toString().includes(query)) ||
+        producto.tallas.some((talla) =>
+          talla.talla_eur.toLowerCase().includes(query) ||
+          talla.talla_usa.toLowerCase().includes(query) ||
+          talla.talla_cm.toString().includes(query) ||
+          talla.cantidad.toString().includes(query)
+        )
+      );
+    });
+
+    renderProductos(productosFiltrados);
+  }
+
+  // Filtrar productos por columna seleccionada
+  function filtrarPorColumna() {
     const columna = columnaSelect.value;
     const query = buscarInput.value.toLowerCase();
 
@@ -93,7 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const productosFiltrados = productos.filter((producto) => {
-      if (columna === "marca") {
+      if (columna === "codigo") {
+        return producto.codigo.toLowerCase().includes(query);
+      } else if (columna === "marca") {
         return producto.marca.toLowerCase().includes(query);
       } else if (columna === "nombre") {
         return producto.nombre.toLowerCase().includes(query);
@@ -114,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProductos(productosFiltrados);
   }
 
-  // Función para limpiar los filtros
+  // Limpiar filtros
   function limpiarFiltros() {
     buscarInput.value = "";
     columnaSelect.value = "";
@@ -131,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         productosList.innerHTML = `
           <tr>
-            <td colspan="10" class="text-center text-danger">
+            <td colspan="11" class="text-center text-danger">
               Error al cargar los productos.
             </td>
           </tr>
@@ -142,15 +175,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error al obtener los productos:", error);
       productosList.innerHTML = `
         <tr>
-          <td colspan="10" class="text-center text-danger">
+          <td colspan="11" class="text-center text-danger">
             No se pudieron cargar los productos.
           </td>
         </tr>
       `;
     });
 
-  // Evento para el botón de búsqueda
-  buscarButton.addEventListener("click", filtrarProductos);
+  // Evento para el campo de búsqueda (filtrar en tiempo real)
+  buscarInput.addEventListener("input", filtrarPorTodasLasColumnas);
+
+  // Evento para el botón de búsqueda (filtrar por columna seleccionada)
+  buscarButton.addEventListener("click", filtrarPorColumna);
 
   // Evento para el botón de limpiar
   limpiarButton.addEventListener("click", limpiarFiltros);

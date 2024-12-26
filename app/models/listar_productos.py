@@ -10,15 +10,6 @@ class MarcaRangoTalla(db.Model):
     id_marca = db.Column('ID_MARCA', db.Integer, db.ForeignKey('MARCA.ID_MARCA'), nullable=False)
     id_rango_edad = db.Column('ID_RANGO_EDAD', db.Integer, nullable=False)
 
-# class ProductoStock(db.Model):
-#     __tablename__ = 'PRODUCTO_STOCK'
-
-#     id = db.Column('ID_PRODUCTO_STOCK', db.Integer, primary_key=True)
-#     id_producto = db.Column('ID_PRODUCTO', db.Integer, db.ForeignKey('PRODUCTOS.ID_PRODUCTO'), nullable=False)
-#     id_marca_rango_talla = db.Column('ID_MARCA_RANGO_TALLA', db.Integer, db.ForeignKey('MARCA_RANGO_TALLA.ID_MARCA_RANGO_TALLA'), nullable=False)
-#     cantidad = db.Column('CANTIDAD', db.Integer, default=0)
-
-#     talla = db.relationship('MarcaRangoTalla', backref='producto_stock', lazy=True)
 
 class ProductoStock(db.Model):
     __tablename__ = 'PRODUCTO_STOCK'
@@ -82,15 +73,6 @@ class Marca(db.Model):
 
     id = db.Column('ID_MARCA', db.Integer, primary_key=True)
     nombre = db.Column('NOMBRE', db.String(100), nullable=False)
-
-# class PrecioVenta(db.Model):
-#     __tablename__ = 'PRECIO_VENTA'
-
-#     id = db.Column('ID_PRECIO_VENTA', db.Integer, primary_key=True)
-#     id_producto = db.Column('ID_PRODUCTO', db.Integer, db.ForeignKey('PRODUCTOS.ID_PRODUCTO'), nullable=False)
-#     precio_retail = db.Column('PRECIO_RETAIL', db.Float, nullable=False)
-#     precio_regular = db.Column('PRECIO_REGULAR', db.Float, nullable=False)
-#     precio_online = db.Column('PRECIO_ONLINE', db.Float, nullable=False)
 
 
 class PrecioVenta(db.Model):

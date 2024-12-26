@@ -127,14 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarDatosTallas();
 
     document.getElementById('categoriaSelect')
-            .addEventListener('change', handleCategoriaChange);
+        .addEventListener('change', handleCategoriaChange);
 
     // Cuando el usuario cambie de marca, llamamos a obtenerTallasPorMarca
     document.getElementById('marcaSelect')
-            .addEventListener('change', obtenerTallasPorMarca);
+        .addEventListener('change', obtenerTallasPorMarca);
 
     document.getElementById('tallasSelect')
-            .addEventListener('change', mostrarTallas);
+        .addEventListener('change', mostrarTallas);
 });
 
 
@@ -290,19 +290,19 @@ function validarPrecio(input) {
 }
 
 // Event listeners para la validación de precios
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const preciosInputs = [
-        'precioRetail', 
-        'precioRegular', 
-        'precioOnline', 
-        'precioCompra', 
+        'precioRetail',
+        'precioRegular',
+        'precioOnline',
+        'precioCompra',
         'precioPromocion'
     ];
-    
+
     preciosInputs.forEach(id => {
         const input = document.getElementById(id);
         if (input) {
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function () {
                 validarPrecio(this);
             });
         }
@@ -311,10 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener para validar fechas de promoción
     const precioPromocion = document.getElementById('precioPromocion');
     if (precioPromocion) {
-        precioPromocion.addEventListener('input', function() {
+        precioPromocion.addEventListener('input', function () {
             const fechaInicio = document.getElementById('fechaInicioPromo');
             const fechaFin = document.getElementById('fechaFinPromo');
-            
+
             if (this.value) {
                 fechaInicio.required = true;
                 fechaFin.required = true;
@@ -338,3 +338,132 @@ function limpiarFormularioPrecios() {
     document.getElementById('fechaInicioPromo').value = '';
     document.getElementById('fechaFinPromo').value = '';
 }
+
+
+
+
+
+async function guardarTallas() {
+    try {
+        // 1. Obtener valores básicos
+        const categoria = document.getElementById("categoriaSelect")?.value;
+        const modelo = document.getElementById("modeloInput")?.value;
+        const marca = document.getElementById("marcaSelect")?.value;
+
+        // Verificar que los elementos existen
+        if (!categoria || !modelo || !marca) {
+            alert('Error: Faltan elementos básicos del formulario');
+            return;
+        }
+
+        // 2. Obtener precios
+        const precioRetail = parseFloat(document.getElementById('precioRetail')?.value) || 0;
+        const precioRegular = parseFloat(document.getElementById('precioRegular')?.value) || 0;
+        const precioOnline = parseFloat(document.getElementById('precioOnline')?.value) || 0;
+        const precioCompra = parseFloat(document.getElementById('precioCompra')?.value) || 0;
+        const precioPromocion = parseFloat(document.getElementById('precioPromocion')?.value) || null;
+        const fechaInicioPromo = document.getElementById('fechaInicioPromo')?.value || null;
+        const fechaFinPromo = document.getElementById('fechaFinPromo')?.value || null;
+
+        // 3. Validar precios obligatorios
+        if (!precioRetail || !precioRegular || !precioOnline || !precioCompra) {
+            alert('Los precios retail, regular, online y de compra son obligatorios.');
+            return;
+        }
+
+        // Validar datos de promoción
+        if (precioPromocion) {
+            if (!fechaInicioPromo || !fechaFinPromo) {
+                alert('Si ingresa un precio de promoción, debe ingresar fechas de inicio y fin.');
+                return;
+            }
+            if (new Date(fechaFinPromo) <= new Date(fechaInicioPromo)) {
+                alert('La fecha de fin de promoción debe ser posterior a la fecha de inicio.');
+                return;
+            }
+        }
+
+        // 4. Recopilar tallas seleccionadas
+        const tallas = [];
+        if (categoria === '1') { // CALZADO
+            const tallasRows = document.querySelectorAll('.talla-row');
+            tallasRows.forEach(row => {
+                const checkbox = row.querySelector('.talla-checkbox');
+                const cantidadInput = row.querySelector('.talla-cantidad');
+                if (checkbox?.checked && cantidadInput?.value) {
+                    const idMarcaRangoTalla = row.getAttribute('data-id-talla');
+                    const tallaEur = row.querySelector('td:nth-child(2)')?.textContent.replace('Talla ', '');
+
+                    if (idMarcaRangoTalla) {
+                        tallas.push({
+                            idMarcaRangoTalla: parseInt(idMarcaRangoTalla),
+                            tallaEur,
+                            cantidad: parseInt(cantidadInput.value)
+                        });
+                    }
+                }
+            });
+        }
+
+        if (tallas.length === 0) {
+            alert('Debe seleccionar al menos una talla.');
+            return;
+        }
+
+        // 5. Ajustar el código del producto
+        let codigoFiltrado = '';
+        if (productData?.codigo) {
+            codigoFiltrado = productData.codigo.trim();
+            const espacioIndex = codigoFiltrado.indexOf(' ');
+            if (espacioIndex !== -1) {
+                codigoFiltrado = codigoFiltrado.substring(0, espacioIndex);
+            }
+        } else {
+            alert('El código del producto no está definido.');
+            return;
+        }
+
+        // 6. Armar y enviar el objeto JSON
+        const datosProducto = {
+            codigo: codigoFiltrado,
+            nombre: modelo,
+            idCategoria: parseInt(categoria),
+            idMarca: parseInt(marca),
+            imagen_url: productData?.imagen || '',
+            precios: {
+                precioRetail,
+                precioRegular,
+                precioOnline,
+                precioCompra,
+                precioPromocion,
+                fechaInicioPromo,
+                fechaFinPromo
+            },
+            tallas: tallas
+        };
+
+        const response = await fetch('/agregar_productos/guardar_productos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosProducto)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Producto guardado exitosamente');
+            cancelarTallas();
+        } else {
+            alert('Error al guardar el producto: ' + result.error);
+        }
+
+    } catch (error) {
+        console.error('Error al procesar el formulario:', error);
+        alert('Error al guardar el producto: ' + error.message);
+    }
+}
+
+
+

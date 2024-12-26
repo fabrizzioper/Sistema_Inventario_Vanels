@@ -9,9 +9,10 @@ def obtener_productos():
     for producto in productos:
         producto_dict = {
             'id': producto.id,
+            'codigo': producto.codigo,  # Agregar el campo código aquí
             'nombre': producto.nombre,
             'marca': producto.categoria_marca.marca.nombre if producto.categoria_marca else "Desconocida",
-            'imagen_url': f"{request.host_url}{producto.imagen_url}",  # Cambiado aquí
+            'imagen_url': f"{request.host_url}{producto.imagen_url}" if producto.imagen_url else None,
             'precios': {
                 'retail': producto.precios[0].precio_retail if producto.precios else None,
                 'regular': producto.precios[0].precio_regular if producto.precios else None,
@@ -30,3 +31,4 @@ def obtener_productos():
         productos_list.append(producto_dict)
 
     return productos_list
+
