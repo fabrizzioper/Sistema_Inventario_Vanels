@@ -1,0 +1,56 @@
+from app.models.agregar_productos import Categoria, RangoEdad
+from app.models.listar_productos import MarcaRangoTalla, Marca
+from app import db
+
+def obtener_datos_generales():
+    """
+    Recupera datos necesarios para llenar los selectores en el frontend.
+    """
+    try:
+        # Consultar categorías
+        categorias = Categoria.query.filter_by(flag_activo=1).all()
+        categorias_resultado = [{'ID_CATEGORIA': c.id, 'NOMBRE': c.nombre} for c in categorias]
+
+        # Consultar marcas
+        marcas = Marca.query.all()
+        marcas_resultado = [{'ID_MARCA': m.id, 'NOMBRE': m.nombre} for m in marcas]
+
+        # Consultar clasificaciones (rangos de edad)
+        rangos_edad = RangoEdad.query.all()
+        rangos_resultado = [{'ID_RANGO_EDAD': r.id, 'DESCRIPCION': r.descripcion} for r in rangos_edad]
+
+        # Consultar tallas agrupadas por rango de edad
+        tallas_query = (
+            db.session.query(
+                RangoEdad.descripcion.label('rango_edad'),
+                MarcaRangoTalla.id.label('idMarcaRangoTalla'),
+                MarcaRangoTalla.talla_eur.label('tallaEur')
+            )
+            .join(RangoEdad, MarcaRangoTalla.id_rango_edad == RangoEdad.id)
+            .order_by(RangoEdad.id, MarcaRangoTalla.id)
+        ).all()
+
+        tallas_dict = {}
+        for fila in tallas_query:
+            if fila.rango_edad not in tallas_dict:
+                tallas_dict[fila.rango_edad] = []
+            tallas_dict[fila.rango_edad].append({
+                'idMarcaRangoTalla': fila.idMarcaRangoTalla,
+                'tallaEur': fila.tallaEur
+            })
+
+        tallas_por_rango = [
+            {'rango_edad': rango, 'tallas': tallas}
+            for rango, tallas in tallas_dict.items()
+        ]
+
+        # Retornar los datos
+        return {
+            'categorias': categorias_resultado,
+            'marcas': marcas_resultado,
+            'clasificaciones': rangos_resultado,
+            'tallas_por_rango': tallas_por_rango
+        }
+
+    except Exception as e:
+        raise e
