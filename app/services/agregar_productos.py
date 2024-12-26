@@ -54,3 +54,37 @@ def obtener_datos_generales():
 
     except Exception as e:
         raise e
+
+def obtener_tallas_por_marca(id_marca):
+    """
+    Recupera las tallas agrupadas por rango de edad para una marca específica.
+    """
+    try:
+        tallas_query = (
+            db.session.query(
+                RangoEdad.descripcion.label('rango_edad'),
+                MarcaRangoTalla.id.label('idMarcaRangoTalla'),
+                MarcaRangoTalla.talla_eur.label('tallaEur')
+            )
+            .join(RangoEdad, MarcaRangoTalla.id_rango_edad == RangoEdad.id)
+            .filter(MarcaRangoTalla.id_marca == id_marca)
+            .order_by(RangoEdad.id, MarcaRangoTalla.id)
+        ).all()
+
+        tallas_dict = {}
+        for fila in tallas_query:
+            if fila.rango_edad not in tallas_dict:
+                tallas_dict[fila.rango_edad] = []
+            tallas_dict[fila.rango_edad].append({
+                'idMarcaRangoTalla': fila.idMarcaRangoTalla,
+                'tallaEur': fila.tallaEur
+            })
+
+        resultado = [
+            {'rango_edad': rango, 'tallas': tallas}
+            for rango, tallas in tallas_dict.items()
+        ]
+
+        return resultado
+    except Exception as e:
+        raise e
