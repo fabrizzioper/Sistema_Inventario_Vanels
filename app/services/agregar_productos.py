@@ -1,8 +1,16 @@
 import os
 import requests
 from werkzeug.utils import secure_filename
-from app.models.agregar_productos import Categoria, RangoEdad, PrecioCompraHistorica, MovimientoStock
-from app.models.listar_productos import MarcaRangoTalla, Marca, CategoriaMarca, Producto, PrecioVenta, ProductoStock
+from app.models.categoria import Categoria
+from app.models.rango_edad import RangoEdad
+from app.models.precio_compra_historica import PrecioCompraHistorica
+from app.models.movimiento_stock import MovimientoStock
+from app.models.marca_rango_talla import MarcaRangoTalla
+from app.models.marca import Marca
+from app.models.categoria_marca import CategoriaMarca
+from app.models.producto import Producto
+from app.models.precio_venta import PrecioVenta
+from app.models.producto_stock import ProductoStock
 from app import db
 from flask import current_app
 

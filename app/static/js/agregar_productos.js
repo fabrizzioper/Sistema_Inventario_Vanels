@@ -205,6 +205,55 @@ async function obtenerTallasPorMarca(event) {
 
 
 
+// function mostrarTallas() {
+//     const clasificacion = document.getElementById('tallasSelect').value;
+//     const tallasTbody = document.getElementById('tallasTbody');
+//     tallasTbody.innerHTML = '';
+
+//     if (!clasificacion || !tallasData[clasificacion]) return;
+
+//     tallasData[clasificacion].forEach(tallaObj => {
+//         const row = document.createElement('tr');
+//         row.className = 'talla-row';
+
+//         // Guarda ID en data attribute
+//         row.setAttribute('data-id-talla', tallaObj.idMarcaRangoTalla);
+
+//         // Creación de celdas
+//         const tdCheck = document.createElement('td');
+//         const checkbox = document.createElement('input');
+//         checkbox.type = 'checkbox';
+//         checkbox.className = 'talla-checkbox';
+
+//         const tdTalla = document.createElement('td');
+//         tdTalla.textContent = `Talla ${tallaObj.tallaEur}`;
+
+//         const tdCantidad = document.createElement('td');
+//         const cantidadInput = document.createElement('input');
+//         cantidadInput.type = 'number';
+//         cantidadInput.className = 'talla-cantidad';
+//         cantidadInput.min = '0';
+//         cantidadInput.disabled = true;
+//         cantidadInput.placeholder = 'Cantidad';
+
+//         checkbox.addEventListener('change', () => {
+//             cantidadInput.disabled = !checkbox.checked;
+//             if (!checkbox.checked) {
+//                 cantidadInput.value = '';
+//             }
+//         });
+
+//         tdCheck.appendChild(checkbox);
+//         tdCantidad.appendChild(cantidadInput);
+
+//         row.appendChild(tdCheck);
+//         row.appendChild(tdTalla);
+//         row.appendChild(tdCantidad);
+
+//         tallasTbody.appendChild(row);
+//     });
+// }
+
 function mostrarTallas() {
     const clasificacion = document.getElementById('tallasSelect').value;
     const tallasTbody = document.getElementById('tallasTbody');
@@ -215,38 +264,23 @@ function mostrarTallas() {
     tallasData[clasificacion].forEach(tallaObj => {
         const row = document.createElement('tr');
         row.className = 'talla-row';
-
-        // Guarda ID en data attribute
         row.setAttribute('data-id-talla', tallaObj.idMarcaRangoTalla);
 
-        // Creación de celdas
-        const tdCheck = document.createElement('td');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'talla-checkbox';
-
+        // Celda de talla
         const tdTalla = document.createElement('td');
         tdTalla.textContent = `Talla ${tallaObj.tallaEur}`;
 
+        // Celda de cantidad
         const tdCantidad = document.createElement('td');
         const cantidadInput = document.createElement('input');
         cantidadInput.type = 'number';
-        cantidadInput.className = 'talla-cantidad';
+        cantidadInput.className = 'talla-cantidad form-control';
         cantidadInput.min = '0';
-        cantidadInput.disabled = true;
+        cantidadInput.value = '0';
         cantidadInput.placeholder = 'Cantidad';
 
-        checkbox.addEventListener('change', () => {
-            cantidadInput.disabled = !checkbox.checked;
-            if (!checkbox.checked) {
-                cantidadInput.value = '';
-            }
-        });
-
-        tdCheck.appendChild(checkbox);
         tdCantidad.appendChild(cantidadInput);
 
-        row.appendChild(tdCheck);
         row.appendChild(tdTalla);
         row.appendChild(tdCantidad);
 

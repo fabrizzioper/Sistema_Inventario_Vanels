@@ -1,5 +1,5 @@
 from flask import request
-from app.models.listar_productos import Producto
+from app.models.producto import Producto
 
 
 def obtener_productos():

@@ -68,7 +68,7 @@
             Resultados
           </h2>
           <div class="table-responsive">
-            <table class="table">
+            <table class="table w-100">
               <thead>
                 <tr>
                   <th>Imagen</th>
@@ -100,25 +100,50 @@
           </h2>
 
           <!-- Product Info Section -->
+
           <div class="row g-4 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-12">
+              <div
+                id="imageInputContainer"
+                class="form-floating"
+                style="display: none"
+              >
+                <div class="input-group">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="imagenProducto"
+                    accept="image/*"
+                    capture="environment"
+                  />
+                  <label class="input-group-text" for="imagenProducto">
+                    <i class="fas fa-camera"></i>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-3">
+              <div class="form-floating">
+                <input type="text" id="codigoManual" class="form-control" />
+                <label>Código del Producto</label>
+              </div>
+            </div>
+            <div class="col-md-3">
               <div class="form-floating">
                 <select id="categoriaSelect" class="form-select"></select>
                 <label>Categoría</label>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-floating">
-                <input
-                  type="text"
-                  id="modeloInput"
-                  class="form-control"
-                  readonly
-                />
+                <input type="text" id="modeloInput" class="form-control" />
                 <label>Modelo</label>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-floating">
                 <select id="marcaSelect" class="form-select"></select>
                 <label>Marca</label>
@@ -205,29 +230,31 @@
           </div>
 
           <!-- Sizes Section -->
+
           <div
             id="tallasCalzadoContainer"
-            class="tallas-section"
+            class="row g-4 mb-4 mt-4"
             style="display: none"
           >
-            <div class="form-floating mb-4">
-              <select id="tallasSelect" class="form-select">
-                <option value="">Seleccione una clasificación</option>
-              </select>
-              <label>Clasificación de Tallas</label>
-            </div>
+            <div class="col-md-12 mb-4 mt-4">
+              <div class="form-floating mb-4">
+                <select id="tallasSelect" class="form-select">
+                  <option value="">Seleccione una clasificación</option>
+                </select>
+                <label>Clasificación de Tallas</label>
+              </div>
 
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 100px">Seleccionar</th>
-                    <th>Talla</th>
-                    <th style="width: 150px">Cantidad</th>
-                  </tr>
-                </thead>
-                <tbody id="tallasTbody"></tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="table" role="grid">
+                  <thead>
+                    <tr>
+                      <th scope="col">Talla</th>
+                      <th scope="col" style="width: 150px">Cantidad</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tallasTbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
 
