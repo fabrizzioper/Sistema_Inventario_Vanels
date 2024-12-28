@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, render_template
-from app.services.vender_productos import obtener_producto_por_codigo
+from app.services.vender_productos import obtener_producto_por_codigo, descontar_stock
 
 vender_productos_bp = Blueprint('vender_productos', __name__)
 
@@ -10,7 +10,11 @@ def index():
     """
     return render_template('vender_productos.html')
 
-@vender_productos_bp.route('/<codigo>', methods=['GET'])
+@vender_productos_bp.route('/descontar_stock', methods=['POST'])
+def descontar_stock_route():
+    return descontar_stock()
+
+@vender_productos_bp.route('/<codigo>', methods=['GET']) 
 def get_producto_por_codigo(codigo):
     """
     Endpoint API para obtener información detallada de un producto por su código

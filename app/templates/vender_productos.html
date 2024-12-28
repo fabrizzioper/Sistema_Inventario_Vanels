@@ -152,7 +152,7 @@
 
           productData.tallas.forEach((talla) => {
             const option = document.createElement("option");
-            option.value = `${talla.talla_eur}|${talla.cantidad}`;
+            option.value = `${talla.id_marca_rango_talla}|${talla.cantidad}`; // Cambiado para usar el id
             option.textContent = `EUR ${talla.talla_eur} - US ${talla.talla_usa} - ${talla.talla_cm}cm`;
             option.dataset.stock = talla.cantidad;
             selectSize.appendChild(option);
@@ -253,9 +253,9 @@
 
             if (newQuantity > availableStock) {
               alert(
-                `No puedes agregar ${quantityToAdd} unidades. El stock disponible para esta talla es ${
+                `No puedes agregar ${quantityToAdd} unidades. El stock disponible para esta talla es $ {
                   availableStock - currentQuantity
-                }.`
+                }.` 
               );
               return false;
             }
@@ -275,7 +275,7 @@
               "d-flex justify-content-between align-items-center mb-2";
             sizeItem.dataset.size = sizeValue;
             sizeItem.dataset.quantity = quantityToAdd;
-            sizeItem.innerHTML = `
+            sizeItem.innerHTML = ` 
               <span>${sizeText} - <span class="size-quantity">Cantidad: ${quantityToAdd}</span></span>
               <button type="button" class="btn btn-sm btn-danger btn-remove-size">Eliminar</button>
             `;
@@ -390,6 +390,60 @@
         // Botón para agregar contenedor
         addButton.addEventListener("click", () => {
           containerParent.appendChild(createContainer());
+        });
+
+        // Botón para imprimir JSON y enviar al backend
+        document.getElementById("print-json-btn").addEventListener("click", async () => {
+            const containers = document.querySelectorAll(".card");
+            const jsonData = {
+                productos: [] // Cambiado para agrupar por producto
+            };
+
+            containers.forEach(container => {
+                const productCodeInput = container.querySelector(".input-product-code");
+                const sizesList = container.querySelector(".sizes-list").children;
+
+                if (productCodeInput.value.trim()) {
+                    const productEntry = {
+                        codigo_producto: productCodeInput.value.trim(),
+                        tallas: []
+                    };
+
+                    Array.from(sizesList).forEach(sizeItem => {
+                        const id_marca_rango_talla = sizeItem.dataset.size; // Este debe ser el id
+                        const cantidad = sizeItem.dataset.quantity;
+
+                        productEntry.tallas.push({
+                            id_marca_rango_talla: id_marca_rango_talla,
+                            cantidad: parseInt(cantidad)
+                        });
+                    });
+
+                    jsonData.productos.push(productEntry); // Agregar la entrada del producto
+                }
+            });
+
+            // Imprimir el JSON en la consola
+            console.log("JSON a enviar:", JSON.stringify(jsonData, null, 2));
+
+            try {
+                const response = await fetch('/vender_productos/descontar_stock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    console.log("Stock actualizado con éxito.");
+                } else {
+                    console.error("Error al actualizar el stock:", result.message);
+                }
+            } catch (error) {
+                console.error("Error en la solicitud:", error);
+            }
         });
       });
     </script>
