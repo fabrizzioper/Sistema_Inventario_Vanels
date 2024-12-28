@@ -8,3 +8,4 @@ class CategoriaMarca(db.Model):
     id_marca = db.Column('ID_MARCA', db.Integer, db.ForeignKey('MARCA.ID_MARCA'), nullable=False)
 
     marca = db.relationship('Marca', backref='categoria_marcas', lazy=True)
+    categoria = db.relationship('Categoria', backref='categoria_marcas', lazy=True)

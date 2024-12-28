@@ -4,7 +4,7 @@ class Producto(db.Model):
     __tablename__ = 'PRODUCTOS'
 
     id = db.Column('ID_PRODUCTO', db.Integer, primary_key=True)
-    codigo = db.Column('CODIGO', db.String(50), nullable=False)
+    codigo = db.Column('CODIGO', db.String(50), nullable=False, unique=True)
     nombre = db.Column('NOMBRE', db.String(100), nullable=False)
     id_categoria_marca = db.Column('ID_CATEGORIA_MARCA', db.Integer, db.ForeignKey('CATEGORIA_MARCA.ID_CATEGORIA_MARCA'), nullable=False)
     imagen_url = db.Column('IMAGEN_URL', db.String(255), nullable=True)
@@ -14,6 +14,9 @@ class Producto(db.Model):
 
     # Relación con PrecioVenta
     precios = db.relationship('PrecioVenta', backref='producto', lazy=True)
+
+    # Relación con PrecioCompraHistorica
+    precios_compra = db.relationship('PrecioCompraHistorica', backref='producto', lazy=True)
 
     # Relación con CategoriaMarca
     categoria_marca = db.relationship('CategoriaMarca', backref='productos', lazy=True)
