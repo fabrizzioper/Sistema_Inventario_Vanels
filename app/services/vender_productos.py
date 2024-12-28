@@ -77,12 +77,15 @@ def descontar_stock():
                 # Deduct stock
                 stock_entry.cantidad -= cantidad
 
+                # Get the final sale price
+                precio_venta_final = producto.get("precio_venta_final")
+
                 # Log the movement
                 movimiento = MovimientoStock(
                     id_producto_stock=stock_entry.id,
-                    tipo_movimiento='V',  # 'S' for sale
+                    tipo_movimiento="V",  # 'S' for sale
                     cantidad=cantidad,
-                    precio_unitario=stock_entry.precio_promedio  # Assuming you have this field
+                    precio_unitario=precio_venta_final,  # Use the final sale price
                 )
                 db.session.add(movimiento)
             else:

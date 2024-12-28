@@ -12,6 +12,36 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
     />
+    <style>
+      body {
+        background-color: #f0f2f5;
+      }
+      .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #2fc3ecad, #1565c0);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .back-button svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+    </style>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
       defer
@@ -255,7 +285,7 @@
               alert(
                 `No puedes agregar ${quantityToAdd} unidades. El stock disponible para esta talla es $ {
                   availableStock - currentQuantity
-                }.` 
+                }.`
               );
               return false;
             }
@@ -393,64 +423,81 @@
         });
 
         // Botón para imprimir JSON y enviar al backend
-        document.getElementById("print-json-btn").addEventListener("click", async () => {
+        document
+          .getElementById("print-json-btn")
+          .addEventListener("click", async () => {
             const containers = document.querySelectorAll(".card");
             const jsonData = {
-                productos: [] // Cambiado para agrupar por producto
+              productos: [], // Cambiado para agrupar por producto
             };
 
-            containers.forEach(container => {
-                const productCodeInput = container.querySelector(".input-product-code");
-                const sizesList = container.querySelector(".sizes-list").children;
+            containers.forEach((container) => {
+              const productCodeInput = container.querySelector(
+                ".input-product-code"
+              );
+              const sizesList = container.querySelector(".sizes-list").children;
 
-                if (productCodeInput.value.trim()) {
-                    const productEntry = {
-                        codigo_producto: productCodeInput.value.trim(),
-                        tallas: []
-                    };
+              if (productCodeInput.value.trim()) {
+                const productEntry = {
+                  codigo_producto: productCodeInput.value.trim(),
+                  tallas: [],
+                  precio_venta_final: container.querySelector(
+                    ".select-final-sale-price"
+                  ).value, // Agregar el precio de venta final
+                };
 
-                    Array.from(sizesList).forEach(sizeItem => {
-                        const id_marca_rango_talla = sizeItem.dataset.size; // Este debe ser el id
-                        const cantidad = sizeItem.dataset.quantity;
+                Array.from(sizesList).forEach((sizeItem) => {
+                  const id_marca_rango_talla = sizeItem.dataset.size; // Este debe ser el id
+                  const cantidad = sizeItem.dataset.quantity;
 
-                        productEntry.tallas.push({
-                            id_marca_rango_talla: id_marca_rango_talla,
-                            cantidad: parseInt(cantidad)
-                        });
-                    });
+                  productEntry.tallas.push({
+                    id_marca_rango_talla: id_marca_rango_talla,
+                    cantidad: parseInt(cantidad),
+                  });
+                });
 
-                    jsonData.productos.push(productEntry); // Agregar la entrada del producto
-                }
+                jsonData.productos.push(productEntry); // Agregar la entrada del producto
+              }
             });
 
             // Imprimir el JSON en la consola
             console.log("JSON a enviar:", JSON.stringify(jsonData, null, 2));
 
             try {
-                const response = await fetch('/vender_productos/descontar_stock', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(jsonData)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    console.log("Stock actualizado con éxito.");
-                } else {
-                    console.error("Error al actualizar el stock:", result.message);
+              const response = await fetch(
+                "/vender_productos/descontar_stock",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(jsonData),
                 }
+              );
+
+              const result = await response.json();
+              if (result.success) {
+                console.log("Stock actualizado con éxito.");
+              } else {
+                console.error("Error al actualizar el stock:", result.message);
+              }
             } catch (error) {
-                console.error("Error en la solicitud:", error);
+              console.error("Error en la solicitud:", error);
             }
-        });
+          });
       });
     </script>
   </head>
-  <body class="bg-light">
+  <body >
     <div class="container py-5">
-      <h1 class="text-center mb-4">Contenedores Dinámicos</h1>
+      <!-- Botón de atrás -->
+      <a href="/" class="back-button">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+        </svg>
+        Home
+      </a>
+      <h1 class="text-center mt-3 mb-4">Contenedores Dinámicos</h1>
       <div
         id="container-wrapper"
         class="d-flex flex-column align-items-center"

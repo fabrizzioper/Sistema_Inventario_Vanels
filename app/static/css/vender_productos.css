@@ -1,0 +1,26 @@
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #2fc3ecad, #1565c0);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .back-button svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
