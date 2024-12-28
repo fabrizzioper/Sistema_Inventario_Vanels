@@ -29,5 +29,8 @@ def create_app(env_name):
     # Registrar el blueprint para agregar productos
     from app.routes.agregar_productos import agregar_productos_bp
     app.register_blueprint(agregar_productos_bp, url_prefix='/agregar_productos')
+    
+    from app.routes.vender_productos import vender_productos_bp
+    app.register_blueprint(vender_productos_bp, url_prefix='/vender_productos')
 
     return app

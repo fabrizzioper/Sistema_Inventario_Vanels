@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contenedor Dinámico</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+      defer
+    ></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const containerParent = document.getElementById("container-wrapper");
+        const addButton = document.getElementById("add-container-btn");
+
+        // Plantilla para el contenedor de producto
+        const productTemplate = `
+          <div class="card my-3 position-relative mx-auto" style="width: 100%">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+              <h5 class="mb-0">Producto</h5>
+              <button type="button" class="btn btn-danger btn-sm btn-delete" aria-label="Cerrar">X</button>
+            </div>
+            <div class="card-body">
+              <div class="input-group mt-3">
+                <input type="text" class="form-control input-product-code" placeholder="Código de producto" aria-label="Código de producto">
+                <button class="btn btn-primary btn-search" type="button">
+                  <i class="bi bi-search"></i> Buscar
+                </button>
+              </div>
+              <div class="row mt-4 d-none details-section">
+                <div class="col-12 col-md-4 mb-3">
+                  <label class="form-label">Imagen</label>
+                  <div class="border p-3 text-center product-image" style="height: auto; min-height: 210px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                    <img src="" alt="Producto" style="max-width: 100%; max-height: 200px; display: none;">
+                    <p class="image-placeholder">Contenedor de Imagen</p>
+                  </div>
+                </div>
+                <div class="col-12 col-md-8">
+                  <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Nombre</label>
+                      <input type="text" class="form-control input-name" placeholder="Nombre" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Marca</label>
+                      <input type="text" class="form-control input-brand" placeholder="Marca" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Categoría</label>
+                      <input type="text" class="form-control input-category" placeholder="Categoría" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Precio Regular</label>
+                      <input type="text" class="form-control input-regular-price" placeholder="Precio Regular" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Precio Online</label>
+                      <input type="text" class="form-control input-online-price" placeholder="Precio Online" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                      <label class="form-label">Precio Promoción</label>
+                      <input type="text" class="form-control input-promo-price" placeholder="Precio Promoción" disabled>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mt-1 d-none sizes-section">
+                <div class="col-12 col-md-4 mb-2">
+                  <label class="form-label">Tallas</label>
+                  <select class="form-select select-size">
+                    <option value="">Seleccionar Talla</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-4 mb-2">
+                  <label class="form-label">Stock</label>
+                  <input type="text" class="form-control input-stock" placeholder="Stock" disabled />
+                </div>
+                <div class="col-12 col-md-4 mb-2">
+                  <label class="form-label">Cantidad</label>
+                  <input type="number" class="form-control input-quantity" placeholder="Cantidad" min="1" />
+                </div>
+                <div class="col-12 d-flex justify-content-start mt-2">
+                  <button type="button" class="btn btn-secondary btn-sm btn-add-size">
+                    Agregar Talla
+                  </button>
+                </div>
+                <div class="col-12 mt-2 sizes-list"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Función para crear un nuevo contenedor de producto
+        const createContainer = () => {
+          const template = document.createElement("div");
+          template.innerHTML = productTemplate.trim();
+          return template.firstChild;
+        };
+
+        // Función para cargar los datos del producto en el formulario
+        const loadProductData = (card, productData) => {
+          // Cargar imagen
+          const imageContainer = card.querySelector('.product-image');
+          const productImage = imageContainer.querySelector('img');
+          const imagePlaceholder = imageContainer.querySelector('.image-placeholder');
+          
+          if (productData.imagen_url) {
+            productImage.src = productData.imagen_url;
+            productImage.style.display = 'block';
+            imagePlaceholder.style.display = 'none';
+          }
+
+          // Cargar datos básicos
+          card.querySelector('.input-name').value = productData.nombre;
+          card.querySelector('.input-brand').value = productData.marca;
+          card.querySelector('.input-regular-price').value = productData.precios.regular;
+          card.querySelector('.input-online-price').value = productData.precios.online;
+          card.querySelector('.input-promo-price').value = productData.precios.promocion || '';
+
+          // Cargar tallas en el select
+          const selectSize = card.querySelector('.select-size');
+          selectSize.innerHTML = '<option value="">Seleccionar Talla</option>';
+          
+          productData.tallas.forEach(talla => {
+            const option = document.createElement('option');
+            option.value = `${talla.talla_eur}|${talla.cantidad}`;
+            option.textContent = `EUR ${talla.talla_eur} - US ${talla.talla_usa} - ${talla.talla_cm}cm`;
+            option.dataset.stock = talla.cantidad;
+            selectSize.appendChild(option);
+          });
+
+          // Mostrar secciones
+          card.querySelector('.details-section').classList.remove('d-none');
+          card.querySelector('.sizes-section').classList.remove('d-none');
+        };
+
+        // Función para actualizar el stock mostrado
+        const updateStockDisplay = (card) => {
+          const selectSize = card.querySelector('.select-size');
+          const stockInput = card.querySelector('.input-stock');
+          
+          if (selectSize.value) {
+            const stock = selectSize.value.split('|')[1];
+            stockInput.value = stock;
+          } else {
+            stockInput.value = '';
+          }
+        };
+
+        // Función para buscar producto
+        const searchProduct = async (codigo) => {
+          try {
+            const response = await fetch(`/vender_productos/${codigo}`);
+            const data = await response.json();
+            
+            if (!data.success) {
+              throw new Error(data.message);
+            }
+            
+            return data.data;
+          } catch (error) {
+            throw error;
+          }
+        };
+
+        // Event listeners
+        const attachEventListeners = () => {
+          containerParent.addEventListener("click", async (event) => {
+            const target = event.target;
+            const card = target.closest('.card');
+
+            // Búsqueda de producto
+            if (target.closest(".btn-search")) {
+              const productCodeInput = card.querySelector(".input-product-code");
+              const enteredCode = productCodeInput.value.trim();
+
+              if (!enteredCode) {
+                alert("Por favor, ingrese un código de producto.");
+                return;
+              }
+
+              try {
+                const productData = await searchProduct(enteredCode);
+                loadProductData(card, productData);
+              } catch (error) {
+                alert(error.message || "Error al buscar el producto");
+              }
+            }
+
+            // Eliminar contenedor
+            if (target.closest(".btn-delete")) {
+              if (containerParent.children.length > 1) {
+                card.remove();
+              } else {
+                alert("Debe existir al menos un contenedor.");
+              }
+            }
+
+            // Agregar talla
+            if (target.closest(".btn-add-size")) {
+              const sizeSelect = card.querySelector(".select-size");
+              const quantityInput = card.querySelector(".input-quantity");
+              const sizesList = card.querySelector(".sizes-list");
+
+              if (!sizeSelect.value) {
+                alert("Seleccione una talla antes de agregar.");
+                return;
+              }
+
+              const [selectedSize, availableStock] = sizeSelect.value.split('|');
+              const quantity = parseInt(quantityInput.value);
+
+              if (!quantity || quantity < 1) {
+                alert("Ingrese una cantidad válida.");
+                return;
+              }
+
+              if (quantity > parseInt(availableStock)) {
+                alert(`Solo hay ${availableStock} unidades disponibles.`);
+                return;
+              }
+
+              const selectedOption = sizeSelect.selectedOptions[0];
+              const sizeDisplay = selectedOption.textContent;
+
+              const sizeItem = document.createElement("div");
+              sizeItem.className = "d-flex justify-content-between align-items-center mb-2";
+              sizeItem.innerHTML = `
+                <span>${sizeDisplay} - Cantidad: ${quantity}</span>
+                <button type="button" class="btn btn-sm btn-danger btn-remove-size">Eliminar</button>
+              `;
+              sizesList.appendChild(sizeItem);
+
+              // Resetear campos
+              sizeSelect.value = "";
+              quantityInput.value = "";
+              card.querySelector('.input-stock').value = "";
+            }
+
+            // Eliminar talla
+            if (target.closest(".btn-remove-size")) {
+              target.closest(".sizes-list div").remove();
+            }
+          });
+
+          // Event listener para cambios en el select de tallas
+          containerParent.addEventListener("change", (event) => {
+            const target = event.target;
+            if (target.classList.contains('select-size')) {
+              const card = target.closest('.card');
+              updateStockDisplay(card);
+            }
+          });
+        };
+
+        // Inicializar
+        containerParent.innerHTML = "";
+        containerParent.appendChild(createContainer());
+        attachEventListeners();
+
+        // Botón para agregar contenedor
+        addButton.addEventListener("click", () => {
+          containerParent.appendChild(createContainer());
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <h1 class="text-center mb-4">Contenedores Dinámicos</h1>
+      <div id="container-wrapper" class="d-flex flex-column align-items-center">
+      </div>
+      <div class="d-flex justify-content-start mt-3">
+        <button id="add-container-btn" class="btn btn-primary">
+          Agregar Contenedor
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
