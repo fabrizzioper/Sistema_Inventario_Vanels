@@ -470,23 +470,60 @@ document.addEventListener("DOMContentLoaded", () => {
         btnEdit.disabled = false;
       }
 
+      // // Botón Agregar Talla
+      // if (target.closest(".btn-add-size")) {
+
+      //   const sizesList = card.querySelector(".sizes-section");
+
+
+
+      //   // Obtener el id_marca desde el atributo de datos
+      //   const idMarca = card.dataset.idMarca;
+
+      //   if (!idMarca) {
+      //     alert("No se ha especificado una marca para este producto.");
+      //     return;
+      //   }
+      //   // Llamar a la función para agregar una talla dinámicamente
+      //   addSizeDynamically(card, idMarca);
+      // }
+
+
+
       // Botón Agregar Talla
       if (target.closest(".btn-add-size")) {
-
-        const sizesList = card.querySelector(".sizes-section");
-
-
-
         // Obtener el id_marca desde el atributo de datos
         const idMarca = card.dataset.idMarca;
-
         if (!idMarca) {
           alert("No se ha especificado una marca para este producto.");
           return;
         }
-        // Llamar a la función para agregar una talla dinámicamente
+
+        // 1. Verificar si hay contenedores previos en la sección "Tallas Agregadas"
+        const addedSizesList = card.querySelector(".added-sizes-list");
+        const lastAddedSize = addedSizesList.querySelector(".size-container:last-child");
+
+        if (lastAddedSize) {
+          // 2. Obtener el valor del select y de la cantidad
+          const selectSize = lastAddedSize.querySelector(".select-size");
+          const quantityInput = lastAddedSize.querySelector(".input-quantity");
+
+          const tallaSeleccionada = selectSize ? selectSize.value.trim() : "";
+          const cantidadIngresada = quantityInput ? quantityInput.value.trim() : "";
+
+          // 3. Validar que ambos campos estén completados
+          if (!tallaSeleccionada || !cantidadIngresada) {
+            alert("Por favor, completa la talla y la cantidad antes de agregar otra.");
+            return; // Cancela la creación de un nuevo contenedor
+          }
+        }
+
+        // 4. Si pasa la validación, se procede a agregar un nuevo contenedor
         addSizeDynamically(card, idMarca);
       }
+
+
+
 
       // Botón Eliminar talla agregada
       if (target.closest(".added-sizes-list .btn-remove-size")) {
