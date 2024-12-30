@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="row size-container mb-3">
       <div class="col-12 col-md-4 mb-2">
         <label class="form-label">Tallas</label>
-        <select class="form-select select-size">
+        <select class="form-select select-size" disabled>
           <option value="">Seleccionar Talla</option>
         </select>
       </div>
@@ -202,6 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
       selectSize.value = option.value;
       selectSize.disabled = true; // Deshabilitar el select
 
+
+
       // Configurar el stock
       const stockInput = sizeRow.querySelector(".input-stock");
       stockInput.value = talla.cantidad;
@@ -294,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Habilitar el select para permitir la selección de una nueva talla
     const selectSize = sizeRow.querySelector(".select-size");
-    selectSize.disabled = false; // Permitir selección
+    selectSize.disabled = true; // Permitir selección
 
     // Remover el campo de stock ya que es una nueva talla
     const stockDiv = sizeRow.querySelector(".input-stock").parentElement;
@@ -424,19 +426,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const btnEdit = sizeRow.querySelector(".btn-edit");
 
         const quantity = parseInt(quantityInput.value);
-        const stock = parseInt(
-          sizeRow.querySelector(".input-stock")?.value || "0"
-        );
 
-        if (!quantity || quantity < 1) {
+        if (quantity < 0) {
           alert("Ingrese una cantidad válida.");
-          return;
-        }
-
-        if (quantity > stock) {
-          alert(
-            `La cantidad no puede exceder el stock disponible (${stock}).`
-          );
           return;
         }
 
@@ -451,10 +443,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const quantityInput = sizeRow.querySelector(".input-quantity");
         const btnSave = sizeRow.querySelector(".btn-save");
         const btnEdit = sizeRow.querySelector(".btn-edit");
+        const selectSize = sizeRow.querySelector(".select-size");
 
-        quantityInput.disabled = false;
-        btnSave.disabled = false;
-        btnEdit.disabled = true;
+        selectSize.disabled = false; // Habilitar el select de tallas
+        quantityInput.disabled = false; // Habilitar el input de cantidad
+        btnSave.disabled = false; // Habilitar el botón de guardar
+        btnEdit.disabled = true; // Deshabilitar el botón de editar
       }
 
       // Botón Guardar en la sección de tallas agregadas
@@ -463,24 +457,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const quantityInput = sizeRow.querySelector(".input-quantity");
         const btnSave = sizeRow.querySelector(".btn-save");
         const btnEdit = sizeRow.querySelector(".btn-edit");
-
+        const selectSize = sizeRow.querySelector(".select-size");
         const quantity = parseInt(quantityInput.value);
-        const stock = parseInt(
-          sizeRow.querySelector(".input-stock")?.value || "0"
-        );
 
-        if (!quantity || quantity < 1) {
+        if (quantity < 0) {
           alert("Ingrese una cantidad válida.");
           return;
         }
-
-        if (quantity > stock) {
-          alert(
-            `La cantidad no puede exceder el stock disponible (${stock}).`
-          );
-          return;
-        }
-
+        selectSize.disabled = true; // Habilitar el select de tallas
         quantityInput.disabled = true;
         btnSave.disabled = true;
         btnEdit.disabled = false;
@@ -488,7 +472,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Botón Agregar Talla
       if (target.closest(".btn-add-size")) {
+
         const sizesList = card.querySelector(".sizes-section");
+
+
 
         // Obtener el id_marca desde el atributo de datos
         const idMarca = card.dataset.idMarca;
