@@ -3,6 +3,14 @@ from app.models.producto import Producto
 from app.models.producto_stock import ProductoStock
 from app.models.movimiento_stock import MovimientoStock
 from app import db
+from app.models.marca import Marca
+from app.models.categoria import Categoria
+
+def obtener_marcas():
+    return Marca.query.all()
+
+def obtener_categorias():
+    return Categoria.query.all()
 
 def obtener_producto_por_codigo(codigo):
     producto = Producto.query.filter_by(codigo=codigo).first()
@@ -19,11 +27,10 @@ def obtener_producto_por_codigo(codigo):
             if producto.categoria_marca and producto.categoria_marca.categoria
             else "Desconocida"
         ),
-        "marca": (
-            producto.categoria_marca.marca.nombre
-            if producto.categoria_marca
-            else "Desconocida"
-        ),
+        "marca": {
+            "id_marca": producto.categoria_marca.marca.id,
+            "nombre": producto.categoria_marca.marca.nombre
+        } if producto.categoria_marca else None,
         "imagen_url": (
             f"{request.host_url}{producto.imagen_url}" if producto.imagen_url else None
         ),
