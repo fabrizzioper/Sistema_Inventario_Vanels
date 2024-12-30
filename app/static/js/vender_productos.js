@@ -173,8 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Almacenar id_marca en un atributo de datos
+    // Almacenar id_marca y id_producto en atributos de datos
     card.dataset.idMarca = productData.marca.id_marca;
+    card.dataset.idProducto = productData.id_producto || productData.id || "";
 
     // Referencias a los contenedores de tallas
     const sizesSection = card.querySelector(".sizes-section");
@@ -476,9 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 1. Verificar si hay contenedores previos en la sección "Tallas Agregadas"
         const addedSizesList = card.querySelector(".added-sizes-list");
-        const lastAddedSize = addedSizesList.querySelector(
-          ".size-container:last-child"
-        );
+        const lastAddedSize = addedSizesList.querySelector(".size-container:last-child");
 
         if (lastAddedSize) {
           // 2. Obtener el valor del select y de la cantidad
@@ -486,9 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const quantityInput = lastAddedSize.querySelector(".input-quantity");
 
           const tallaSeleccionada = selectSize ? selectSize.value.trim() : "";
-          const cantidadIngresada = quantityInput
-            ? quantityInput.value.trim()
-            : "";
+          const cantidadIngresada = quantityInput ? quantityInput.value.trim() : "";
 
           // 3. Validar que ambos campos estén completados
           if (!tallaSeleccionada || !cantidadIngresada) {
@@ -503,6 +500,9 @@ document.addEventListener("DOMContentLoaded", () => {
         addSizeDynamically(card, idMarca);
       }
 
+
+
+      
       // Botón Eliminar talla agregada
       if (target.closest(".added-sizes-list .btn-remove-size")) {
         const sizeRow = target.closest(".size-container");
@@ -585,8 +585,12 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     });
 
+    // Obtener el id del producto desde el dataset de la card
+    const productoId = card.dataset.idProducto || "";
+
     // Retornar todo en un objeto
     return {
+      idProducto: productoId,
       codigo,
       nombre,
       marcaId,       // Esto es el data-idMarca del producto
@@ -601,10 +605,10 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Capturamos el botón de "Imprimir JSON" y agregamos su listener
-  const printJsonButton = document.getElementById("print-json-btn");
-  printJsonButton.addEventListener("click", () => {
-    const card = document.querySelector(".card"); // Suponiendo que solo hay una card
+  // Capturamos el botón de "Guardar" y agregamos su listener
+  const saveButton = document.getElementById("save-btn");
+  saveButton.addEventListener("click", async () => {
+    const card = document.querySelector(".card");
     if (!card) {
       console.warn("No se encontró la tarjeta (card) para recolectar datos.");
       return;
@@ -613,9 +617,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // Recolectar datos
     const formData = collectFormData(card);
 
-    // Imprimir por consola
-    console.log("Datos recopilados:", formData);
-    // Si quieres verlo como JSON string:
-    // console.log("JSON:", JSON.stringify(formData, null, 2));
+    try {
+      const response = await fetch('/guardar_producto', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Producto guardado exitosamente');
+      } else {
+        alert(`Error al guardar el producto: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Ocurrió un error al intentar guardar el producto');
+    }
   });
 });
