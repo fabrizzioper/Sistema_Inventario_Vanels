@@ -16,41 +16,14 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <style>
-      body {
-        background-color: #f0f2f5;
-      }
-      .back-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #2fc3ecad, #1565c0);
-        color: white;
-        text-decoration: none;
-        border-radius: 50px;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .back-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .back-button svg {
-        width: 20px;
-        height: 20px;
-        fill: currentColor;
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/vender_productos.css') }}"
+    />
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
       defer
     ></script>
-   
   </head>
   <body>
     <div class="container py-5">
@@ -197,8 +170,8 @@
                       class="btn btn-secondary btn-sm btn-guardar w-100"
                       disabled
                     >
-                    <i class="fas fa-save"></i>
-                  </button>
+                      <i class="fas fa-save"></i>
+                    </button>
                   </div>
                 </div>
               </div>
