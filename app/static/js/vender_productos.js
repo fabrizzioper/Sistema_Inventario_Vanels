@@ -108,8 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cargar imagen
     const imageContainer = card.querySelector(".product-image");
     const productImage = imageContainer.querySelector("img");
-    const imagePlaceholder =
-      imageContainer.querySelector(".image-placeholder");
+    const imagePlaceholder = imageContainer.querySelector(".image-placeholder");
 
     if (productData.imagen_url) {
       productImage.src = productData.imagen_url;
@@ -201,8 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
       selectSize.appendChild(option);
       selectSize.value = option.value;
       selectSize.disabled = true; // Deshabilitar el select
-
-
 
       // Configurar el stock
       const stockInput = sizeRow.querySelector(".input-stock");
@@ -296,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Habilitar el select para permitir la selección de una nueva talla
     const selectSize = sizeRow.querySelector(".select-size");
-    selectSize.disabled = true; // Permitir selección
+    selectSize.disabled = true; // Se habilitará en botón "Editar"
 
     // Remover el campo de stock ya que es una nueva talla
     const stockDiv = sizeRow.querySelector(".input-stock").parentElement;
@@ -352,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
-  // Event listeners
+  // Función que adjunta todos los listeners de eventos
   const attachEventListeners = () => {
     containerParent.addEventListener("click", async (event) => {
       const target = event.target;
@@ -360,9 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Búsqueda de producto
       if (target.closest(".btn-search")) {
-        const productCodeInput = card.querySelector(
-          ".input-product-code"
-        );
+        const productCodeInput = card.querySelector(".input-product-code");
         const enteredCode = productCodeInput.value.trim();
 
         if (!enteredCode) {
@@ -447,8 +442,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         selectSize.disabled = false; // Habilitar el select de tallas
         quantityInput.disabled = false; // Habilitar el input de cantidad
-        btnSave.disabled = false; // Habilitar el botón de guardar
-        btnEdit.disabled = true; // Deshabilitar el botón de editar
+        btnSave.disabled = false;      // Habilitar el botón de guardar
+        btnEdit.disabled = true;       // Deshabilitar el botón de editar
       }
 
       // Botón Guardar en la sección de tallas agregadas
@@ -464,31 +459,11 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Ingrese una cantidad válida.");
           return;
         }
-        selectSize.disabled = true; // Habilitar el select de tallas
+        selectSize.disabled = true;
         quantityInput.disabled = true;
         btnSave.disabled = true;
         btnEdit.disabled = false;
       }
-
-      // // Botón Agregar Talla
-      // if (target.closest(".btn-add-size")) {
-
-      //   const sizesList = card.querySelector(".sizes-section");
-
-
-
-      //   // Obtener el id_marca desde el atributo de datos
-      //   const idMarca = card.dataset.idMarca;
-
-      //   if (!idMarca) {
-      //     alert("No se ha especificado una marca para este producto.");
-      //     return;
-      //   }
-      //   // Llamar a la función para agregar una talla dinámicamente
-      //   addSizeDynamically(card, idMarca);
-      // }
-
-
 
       // Botón Agregar Talla
       if (target.closest(".btn-add-size")) {
@@ -501,7 +476,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 1. Verificar si hay contenedores previos en la sección "Tallas Agregadas"
         const addedSizesList = card.querySelector(".added-sizes-list");
-        const lastAddedSize = addedSizesList.querySelector(".size-container:last-child");
+        const lastAddedSize = addedSizesList.querySelector(
+          ".size-container:last-child"
+        );
 
         if (lastAddedSize) {
           // 2. Obtener el valor del select y de la cantidad
@@ -509,11 +486,15 @@ document.addEventListener("DOMContentLoaded", () => {
           const quantityInput = lastAddedSize.querySelector(".input-quantity");
 
           const tallaSeleccionada = selectSize ? selectSize.value.trim() : "";
-          const cantidadIngresada = quantityInput ? quantityInput.value.trim() : "";
+          const cantidadIngresada = quantityInput
+            ? quantityInput.value.trim()
+            : "";
 
           // 3. Validar que ambos campos estén completados
           if (!tallaSeleccionada || !cantidadIngresada) {
-            alert("Por favor, completa la talla y la cantidad antes de agregar otra.");
+            alert(
+              "Por favor, completa la talla y la cantidad antes de agregar otra."
+            );
             return; // Cancela la creación de un nuevo contenedor
           }
         }
@@ -521,9 +502,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // 4. Si pasa la validación, se procede a agregar un nuevo contenedor
         addSizeDynamically(card, idMarca);
       }
-
-
-
 
       // Botón Eliminar talla agregada
       if (target.closest(".added-sizes-list .btn-remove-size")) {
@@ -538,9 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (target.classList.contains("select-size")) {
         const sizeRow = target.closest(".size-container");
         const stockInput = sizeRow.querySelector(".input-stock");
-        const hiddenStockInput = sizeRow.querySelector(
-          ".input-stock-hidden"
-        );
+        const hiddenStockInput = sizeRow.querySelector(".input-stock-hidden");
 
         if (target.value) {
           const stock = target.value.split("|")[1];
@@ -562,6 +538,84 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Inicializar
   attachEventListeners();
+
+  // ===================== NUEVO CÓDIGO PARA IMPRIMIR JSON =====================
+
+  // Función para recolectar datos del formulario en la card
+  function collectFormData(card) {
+    // Datos básicos
+    const codigo = card.querySelector(".input-codigo")?.value || "";
+    const nombre = card.querySelector(".input-name")?.value || "";
+    const marcaId = card.dataset.idMarca || "";
+    const marcaSelect = card.querySelector(".input-brand")?.value || "";
+    const categoriaSelect = card.querySelector(".input-category")?.value || "";
+
+    // Precios
+    const precioCompra = card.querySelector(".input-purchase-price")?.value || "";
+    const precioRegular = card.querySelector(".input-regular-price")?.value || "";
+    const precioOnline = card.querySelector(".input-online-price")?.value || "";
+    const precioPromo = card.querySelector(".input-promo-price")?.value || "";
+
+    // Tallas existentes
+    const existingSizesList = card.querySelectorAll(".existing-sizes-list .size-container");
+    const existingSizes = Array.from(existingSizesList).map((row) => {
+      const selectValue = row.querySelector(".select-size")?.value || "";
+      const [idMarcaRangoTalla, stock] = selectValue.split("|");
+      const newQuantity = row.querySelector(".input-quantity")?.value || 0;
+
+      return {
+        idMarcaRangoTalla,
+        stockAnterior: parseInt(stock, 10),
+        nuevaCantidad: parseInt(newQuantity, 10) || 0,
+      };
+    });
+
+    // Tallas agregadas dinámicamente
+    const addedSizesList = card.querySelectorAll(".added-sizes-list .size-container");
+    const addedSizes = Array.from(addedSizesList).map((row) => {
+      const selectValue = row.querySelector(".select-size")?.value || "";
+      const [idMarcaRangoTalla, stock] = selectValue.split("|");
+      const newQuantity = row.querySelector(".input-quantity")?.value || 0;
+
+      return {
+        idMarcaRangoTalla,
+        stockAnterior: parseInt(stock, 10),
+        nuevaCantidad: parseInt(newQuantity, 10) || 0,
+      };
+    });
+
+    // Retornar todo en un objeto
+    return {
+      codigo,
+      nombre,
+      marcaId,       // Esto es el data-idMarca del producto
+      marcaSelect,   // Valor del <select> de marca
+      categoriaSelect,
+      precioCompra,
+      precioRegular,
+      precioOnline,
+      precioPromo,
+      tallasExistentes: existingSizes,
+      tallasAgregadas: addedSizes,
+    };
+  }
+
+  // Capturamos el botón de "Imprimir JSON" y agregamos su listener
+  const printJsonButton = document.getElementById("print-json-btn");
+  printJsonButton.addEventListener("click", () => {
+    const card = document.querySelector(".card"); // Suponiendo que solo hay una card
+    if (!card) {
+      console.warn("No se encontró la tarjeta (card) para recolectar datos.");
+      return;
+    }
+
+    // Recolectar datos
+    const formData = collectFormData(card);
+
+    // Imprimir por consola
+    console.log("Datos recopilados:", formData);
+    // Si quieres verlo como JSON string:
+    // console.log("JSON:", JSON.stringify(formData, null, 2));
+  });
 });
