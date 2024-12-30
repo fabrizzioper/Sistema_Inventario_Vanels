@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -178,7 +186,7 @@
             </div>
 
             <div class="row mt-1 d-none sizes-section">
-              <div class="col-12 d-flex justify-content-start mb-3">
+              <div class="col-12 d-flex justify-content-start mb-3 mt-3 mt-md-0">
                 <button
                   type="button"
                   class="btn btn-secondary btn-sm btn-add-size"
@@ -186,7 +194,16 @@
                   Agregar Talla
                 </button>
               </div>
-              <div class="col-12 sizes-list"></div>
+              <!-- Contenedor para tallas existentes -->
+              <div class="col-12 mt-3 mt-md-1">
+                <h5 >Tallas Existentes</h5>
+                <div class="existing-sizes-list"></div>
+              </div>
+              <!-- Contenedor para tallas agregadas dinámicamente -->
+              <div class="col-12 mt-md-0">
+                <h5 id="tallas-existentes" class="d-none">Tallas Agregadas</h5>
+                <div class="added-sizes-list"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -200,3 +217,13 @@
     <script src="{{ url_for('static', filename='js/vender_productos.js') }}"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
