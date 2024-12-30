@@ -21,11 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
       />
     </div>
     <div class="col-12 col-md-3 mb-2">
-      <label class="form-label">Cantidad</label>
+      <label class="form-label">Nueva cantidad</label>
       <input
         type="number"
         class="form-control input-quantity"
-        placeholder="Cantidad"
+        placeholder="Nueva cantida"
         min="1"
         disabled
       />
@@ -54,8 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="col-4 col-md-1 mt-2 d-flex align-items-center">
       <button
         type="button"
-        class="btn btn-danger btn-sm btn-save w-100"
-        disabled
+        class="btn btn-danger btn-sm btn-remove-size w-100"
+       
       >
         <i class="fas fa-trash"></i>
       </button>
