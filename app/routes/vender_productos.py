@@ -17,7 +17,9 @@ def index():
     """
     Ruta principal que renderiza el template HTML
     """
-    return render_template('vender_productos.html')
+    marcas = obtener_marcas()
+    categorias = obtener_categorias()
+    return render_template('vender_productos.html', marcas=marcas, categorias=categorias)
 
 @vender_productos_bp.route('/descontar_stock', methods=['POST'])
 def descontar_stock_route():
