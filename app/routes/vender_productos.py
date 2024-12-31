@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, render_template, request
-from app.services.vender_productos import obtener_producto_por_codigo
+from app.services.vender_productos import obtener_producto_por_codigo, actualizar_producto_y_stock
 from app.models.marca import Marca
 from app.models.categoria import Categoria
 from app.services.agregar_productos import obtener_tallas_por_marca
@@ -76,42 +76,21 @@ def guardar_producto():
                 'message': 'Datos del producto inválidos'
             }), 400
             
-        # Extraer datos del producto
-        producto_data = {
-            'id_producto': data.get('idProducto'),
-            'codigo': data.get('codigo'),
-            'nombre': data.get('nombre'),
-            'id_marca': data.get('marcaId'),
-            'id_categoria': data.get('categoriaSelect'),
-            'precio_compra': data.get('precioCompra'),
-            'precio_regular': data.get('precioRegular'),
-            'precio_online': data.get('precioOnline'),
-            'precio_promo': data.get('precioPromo')
-        }
+        # Actualizar producto usando el servicio
+        resultado = actualizar_producto_y_stock(data)
         
-        # Procesar tallas existentes
-        tallas_existentes = data.get('tallasExistentes', [])
-        for talla in tallas_existentes:
-            # Lógica para actualizar stock de tallas existentes
-            pass
+        if not resultado['success']:
+            return jsonify(resultado), 400
             
-        # Procesar tallas agregadas
-        tallas_agregadas = data.get('tallasAgregadas', [])
-        for talla in tallas_agregadas:
-            # Lógica para agregar nuevas tallas
-            pass
-            
-        # Aquí iría la lógica para guardar/actualizar en la base de datos
-        
         return jsonify({
             'success': True,
-            'message': 'Producto guardado exitosamente'
+            'message': 'Producto actualizado correctamente'
         }), 200
         
     except Exception as e:
         return jsonify({
             'success': False,
-            'message': f'Error al guardar el producto: {str(e)}'
+            'message': f'Error al actualizar el producto: {str(e)}'
         }), 500
         
         

@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const containerParent = document.getElementById("container-wrapper");
 
+  // ------------------- Plantillas de tallas -------------------
+
   // Plantilla para el contenedor de tallas existentes (2 botones: Editar y Guardar)
   const existingSizeContainerTemplate = `
     <div class="row size-container mb-3">
@@ -103,7 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Función para cargar los datos del producto en el formulario
+  // ------------------- Cargar datos del producto -------------------
+
   const loadProductData = (card, productData) => {
     // Cargar imagen
     const imageContainer = card.querySelector(".product-image");
@@ -132,31 +135,28 @@ document.addEventListener("DOMContentLoaded", () => {
     card.querySelector(".input-promo-price").value =
       productData.precios.promocion || "";
 
-    // Establecer el valor seleccionado en los selects de Marca y Categoría
+    // Selects de Marca y Categoría
     const brandSelect = card.querySelector(".input-brand");
     const categorySelect = card.querySelector(".input-category");
 
-    // Verificar y establecer Marca
+    // Verificar y establecer Marca (si coincide con los <option>)
     const brandOption = Array.from(brandSelect.options).find(
       (option) =>
         option.text.trim().toLowerCase() ===
         productData.marca.nombre.trim().toLowerCase()
     );
 
-    console.log("Marca:", productData.marca); // Para depuración
-    console.log("Categoria", productData.categoria); // Para depuración
-
     if (brandOption) {
       brandSelect.disabled = false; // Habilitar temporalmente
       brandSelect.value = brandOption.value;
-      brandSelect.disabled = true; // Deshabilitar nuevamente
+      brandSelect.disabled = true;  // Deshabilitar nuevamente
     } else {
       console.warn(
         `Marca con nombre "${productData.marca.nombre}" no encontrada.`
       );
     }
 
-    // Verificar y establecer Categoría
+    // Verificar y establecer Categoría (si coincide con los <option>)
     const categoryOption = Array.from(categorySelect.options).find(
       (option) =>
         option.text.trim().toLowerCase() ===
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (categoryOption) {
       categorySelect.disabled = false; // Habilitar temporalmente
       categorySelect.value = categoryOption.value;
-      categorySelect.disabled = true; // Deshabilitar nuevamente
+      categorySelect.disabled = true;  // Deshabilitar nuevamente
     } else {
       console.warn(
         `Categoría con nombre "${productData.categoria}" no encontrada.`
@@ -177,41 +177,41 @@ document.addEventListener("DOMContentLoaded", () => {
     card.dataset.idMarca = productData.marca.id_marca;
     card.dataset.idProducto = productData.id_producto || productData.id || "";
 
-    // Referencias a los contenedores de tallas
+    // Secciones de tallas
     const sizesSection = card.querySelector(".sizes-section");
     const existingSizesList = card.querySelector(".existing-sizes-list");
     const addedSizesList = card.querySelector(".added-sizes-list");
 
     existingSizesList.innerHTML = ""; // Limpiar tallas existentes
-    addedSizesList.innerHTML = ""; // Limpiar tallas agregadas previamente
+    addedSizesList.innerHTML = "";    // Limpiar tallas agregadas
 
+    // Cargar tallas existentes
     productData.tallas.forEach((talla) => {
-      // Crear un nuevo contenedor de talla existente
       const sizeContainer = document.createElement("div");
       sizeContainer.innerHTML = existingSizeContainerTemplate;
       const sizeRow = sizeContainer.firstElementChild;
 
-      // Configurar el select de tallas
       const selectSize = sizeRow.querySelector(".select-size");
       selectSize.innerHTML = '<option value="">Seleccionar Talla</option>';
 
+      // Creamos la opción con "idMarcaRangoTalla|stock"
       const option = document.createElement("option");
       option.value = `${talla.id_marca_rango_talla}|${talla.cantidad}`;
       option.textContent = `EUR ${talla.talla_eur || "No disponible"}`;
       selectSize.appendChild(option);
       selectSize.value = option.value;
-      selectSize.disabled = true; // Deshabilitar el select
+      selectSize.disabled = true;
 
-      // Configurar el stock
+      // Stock actual
       const stockInput = sizeRow.querySelector(".input-stock");
       stockInput.value = talla.cantidad;
 
-      // Configurar la cantidad
+      // Nueva cantidad (empieza vacía, habilitable al editar)
       const quantityInput = sizeRow.querySelector(".input-quantity");
-      quantityInput.value = ""; // Inicialmente vacío
-      quantityInput.disabled = true; // Deshabilitado hasta que se edite
+      quantityInput.value = "";
+      quantityInput.disabled = true;
 
-      // Añadir el contenedor al listado de tallas existentes
+      // Añadimos la fila de talla existente
       existingSizesList.appendChild(sizeRow);
     });
 
@@ -220,7 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
     card.querySelector(".details-section").classList.remove("d-none");
   };
 
-  // Función para buscar producto
+  // ------------------- Búsqueda de producto -------------------
+
   const searchProduct = async (codigo) => {
     try {
       const response = await fetch(`/vender_productos/${codigo}`);
@@ -229,14 +230,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!data.success) {
         throw new Error(data.message);
       }
-
       return data.data;
     } catch (error) {
       throw error;
     }
   };
 
-  // Función para habilitar campos para edición en detalles
+  // ------------------- Habilitar / Deshabilitar campos del detalle -------------------
+
   const enableFields = (card) => {
     const fields = card.querySelectorAll(
       ".input-purchase-price, .input-promo-price, .input-online-price, .input-regular-price, .input-category, .input-brand, .input-name, .input-codigo"
@@ -246,7 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Función para deshabilitar campos después de guardar en detalles
   const disableFields = (card) => {
     const fields = card.querySelectorAll(
       ".input-purchase-price, .input-promo-price, .input-online-price, .input-regular-price, .input-category, .input-brand, .input-name, .input-codigo"
@@ -256,7 +256,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Función para validar campos
+  // ------------------- Validar campos (ejemplo genérico) -------------------
+
   const validateFields = (card) => {
     const requiredFields = [
       card.querySelector(".input-product-code"),
@@ -270,60 +271,59 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     for (const field of requiredFields) {
+      if (!field) continue; // Evitar errores si no existe algún campo
       if (field.tagName === "SELECT") {
         if (!field.value) {
-          return false; // Campo de selección vacío
+          return false;
         }
       } else {
         if (!field.value.trim()) {
-          return false; // Campo de texto vacío
+          return false;
         }
       }
     }
-    return true; // Todos los campos están llenos
+    return true;
   };
 
-  // Función para agregar una talla dinámica (a tallas agregadas)
+  // ------------------- Agregar Talla Dinámica -------------------
+
   const addSizeDynamically = (card, idMarca) => {
     const addedSizesList = card.querySelector(".added-sizes-list");
 
-    // Crear un nuevo contenedor de talla agregado dinámicamente
+    // Crear un nuevo contenedor de talla
     const sizeContainer = document.createElement("div");
     sizeContainer.innerHTML = addedSizeContainerTemplate;
     const sizeRow = sizeContainer.firstElementChild;
 
-    // Habilitar el select para permitir la selección de una nueva talla
+    // Habilitar select al hacer clic en "Editar"
     const selectSize = sizeRow.querySelector(".select-size");
-    selectSize.disabled = true; // Se habilitará en botón "Editar"
+    selectSize.disabled = true; // se activará en "Editar"
 
-    // Remover el campo de stock ya que es una nueva talla
+    // Remover el campo de stock (porque es nueva talla)
     const stockDiv = sizeRow.querySelector(".input-stock").parentElement;
     stockDiv.remove();
 
-    // Opcional: Agregar un campo oculto para stock con valor 0
+    // Campo oculto para stock con valor 0 por defecto
     const hiddenStockInput = document.createElement("input");
     hiddenStockInput.type = "hidden";
     hiddenStockInput.classList.add("input-stock-hidden");
     hiddenStockInput.value = "0";
     sizeRow.appendChild(hiddenStockInput);
 
-    // Mostrar un indicador de carga mientras se obtienen las tallas
+    addedSizesList.appendChild(sizeRow);
+
+    // Mostrar un "Cargando tallas..." antes de la respuesta
     const loadingOption = document.createElement("option");
     loadingOption.textContent = "Cargando tallas...";
     loadingOption.disabled = true;
     loadingOption.selected = true;
     selectSize.appendChild(loadingOption);
 
-    // Añadir el contenedor de talla al DOM antes de realizar la solicitud
-    addedSizesList.appendChild(sizeRow);
-
-    // Realizar la solicitud a la API para obtener las tallas
+    // Llamar a la API para obtener tallas de la marca
     fetch(`/vender_productos/obtener_tallas_por_marca/${idMarca}`)
       .then((response) => response.json())
       .then((data) => {
-        // Limpiar las opciones existentes
         selectSize.innerHTML = '<option value="">Seleccionar Talla</option>';
-
         if (data.success && data.tallas_por_rango.length > 0) {
           data.tallas_por_rango.forEach((rango) => {
             rango.tallas.forEach((talla) => {
@@ -345,38 +345,35 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Error al obtener las tallas:", error);
-        selectSize.innerHTML =
-          '<option value="">Error al cargar tallas</option>';
+        selectSize.innerHTML = '<option value="">Error al cargar tallas</option>';
       });
   };
 
-  // Función que adjunta todos los listeners de eventos
+  // ------------------- Listeners de eventos -------------------
+
   const attachEventListeners = () => {
     containerParent.addEventListener("click", async (event) => {
       const target = event.target;
       const card = target.closest(".card");
+      if (!card) return;
 
-      // Búsqueda de producto
+      // Botón Buscar
       if (target.closest(".btn-search")) {
         const productCodeInput = card.querySelector(".input-product-code");
         const enteredCode = productCodeInput.value.trim();
-
         if (!enteredCode) {
           alert("Por favor, ingrese un código de producto.");
           return;
         }
-
         try {
           const productData = await searchProduct(enteredCode);
           loadProductData(card, productData);
-
-          console.log("ID de Marca:", productData.marca.id_marca); // Imprimir ID de Marca
         } catch (error) {
           alert(error.message || "Error al buscar el producto");
         }
       }
 
-      // Botón "Datos" para habilitar campos en detalles
+      // Botón "Datos" (habilita campos)
       if (target.closest(".btn-datos")) {
         enableFields(card);
         const guardarButton = card.querySelector(".btn-guardar");
@@ -385,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Botón "Guardar" para validar campos antes de guardar
+      // Botón "Guardar" en la sección detalles
       if (target.closest(".btn-guardar")) {
         const isValid = validateFields(card);
         if (!isValid) {
@@ -394,7 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           return;
         }
-
         disableFields(card);
         const guardarButton = card.querySelector(".btn-guardar");
         if (guardarButton) {
@@ -402,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Botón Editar en la sección de tallas existentes
+      // Botón Editar en tallas EXISTENTES
       if (target.closest(".existing-sizes-list .btn-edit")) {
         const sizeRow = target.closest(".size-container");
         const quantityInput = sizeRow.querySelector(".input-quantity");
@@ -414,26 +410,24 @@ document.addEventListener("DOMContentLoaded", () => {
         btnEdit.disabled = true;
       }
 
-      // Botón Guardar en la sección de tallas existentes
+      // Botón Guardar en tallas EXISTENTES
       if (target.closest(".existing-sizes-list .btn-save")) {
         const sizeRow = target.closest(".size-container");
         const quantityInput = sizeRow.querySelector(".input-quantity");
         const btnSave = sizeRow.querySelector(".btn-save");
         const btnEdit = sizeRow.querySelector(".btn-edit");
 
-        const quantity = parseInt(quantityInput.value);
-
+        const quantity = parseInt(quantityInput.value, 10) || 0;
         if (quantity < 0) {
           alert("Ingrese una cantidad válida.");
           return;
         }
-
         quantityInput.disabled = true;
         btnSave.disabled = true;
         btnEdit.disabled = false;
       }
 
-      // Botón Editar en la sección de tallas agregadas
+      // Botón Editar en tallas AGREGADAS
       if (target.closest(".added-sizes-list .btn-edit")) {
         const sizeRow = target.closest(".size-container");
         const quantityInput = sizeRow.querySelector(".input-quantity");
@@ -441,21 +435,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const btnEdit = sizeRow.querySelector(".btn-edit");
         const selectSize = sizeRow.querySelector(".select-size");
 
-        selectSize.disabled = false; // Habilitar el select de tallas
-        quantityInput.disabled = false; // Habilitar el input de cantidad
-        btnSave.disabled = false;      // Habilitar el botón de guardar
-        btnEdit.disabled = true;       // Deshabilitar el botón de editar
+        selectSize.disabled = false;
+        quantityInput.disabled = false;
+        btnSave.disabled = false;
+        btnEdit.disabled = true;
       }
 
-      // Botón Guardar en la sección de tallas agregadas
+      // Botón Guardar en tallas AGREGADAS
       if (target.closest(".added-sizes-list .btn-save")) {
         const sizeRow = target.closest(".size-container");
         const quantityInput = sizeRow.querySelector(".input-quantity");
         const btnSave = sizeRow.querySelector(".btn-save");
         const btnEdit = sizeRow.querySelector(".btn-edit");
         const selectSize = sizeRow.querySelector(".select-size");
-        const quantity = parseInt(quantityInput.value);
 
+        const quantity = parseInt(quantityInput.value, 10) || 0;
         if (quantity < 0) {
           alert("Ingrese una cantidad válida.");
           return;
@@ -468,41 +462,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Botón Agregar Talla
       if (target.closest(".btn-add-size")) {
-        // Obtener el id_marca desde el atributo de datos
         const idMarca = card.dataset.idMarca;
         if (!idMarca) {
           alert("No se ha especificado una marca para este producto.");
           return;
         }
-
-        // 1. Verificar si hay contenedores previos en la sección "Tallas Agregadas"
+        // Verificar si la última talla agregada está completa
         const addedSizesList = card.querySelector(".added-sizes-list");
         const lastAddedSize = addedSizesList.querySelector(".size-container:last-child");
-
         if (lastAddedSize) {
-          // 2. Obtener el valor del select y de la cantidad
           const selectSize = lastAddedSize.querySelector(".select-size");
           const quantityInput = lastAddedSize.querySelector(".input-quantity");
-
           const tallaSeleccionada = selectSize ? selectSize.value.trim() : "";
           const cantidadIngresada = quantityInput ? quantityInput.value.trim() : "";
-
-          // 3. Validar que ambos campos estén completados
           if (!tallaSeleccionada || !cantidadIngresada) {
-            alert(
-              "Por favor, completa la talla y la cantidad antes de agregar otra."
-            );
-            return; // Cancela la creación de un nuevo contenedor
+            alert("Por favor, completa la talla y la cantidad antes de agregar otra.");
+            return;
           }
         }
-
-        // 4. Si pasa la validación, se procede a agregar un nuevo contenedor
+        // Si todo OK, agrega una nueva talla
         addSizeDynamically(card, idMarca);
       }
 
-
-
-      
       // Botón Eliminar talla agregada
       if (target.closest(".added-sizes-list .btn-remove-size")) {
         const sizeRow = target.closest(".size-container");
@@ -510,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Event listener para cambios en el select de tallas
+    // Cambio en el select de tallas
     containerParent.addEventListener("change", (event) => {
       const target = event.target;
       if (target.classList.contains("select-size")) {
@@ -547,7 +528,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Datos básicos
     const codigo = card.querySelector(".input-codigo")?.value || "";
     const nombre = card.querySelector(".input-name")?.value || "";
-    const marcaId = card.dataset.idMarca || "";
     const marcaSelect = card.querySelector(".input-brand")?.value || "";
     const categoriaSelect = card.querySelector(".input-category")?.value || "";
 
@@ -564,10 +544,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const [idMarcaRangoTalla, stock] = selectValue.split("|");
       const newQuantity = row.querySelector(".input-quantity")?.value || 0;
 
+      // Aseguramos que stockAnterior sea numérico, y si es NaN => 0
+      const stockAnterior = parseInt(stock, 10) || 0;
+      const nuevaCantidad = parseInt(newQuantity, 10) || 0;
+
       return {
         idMarcaRangoTalla,
-        stockAnterior: parseInt(stock, 10),
-        nuevaCantidad: parseInt(newQuantity, 10) || 0,
+        stockAnterior,
+        nuevaCantidad
       };
     });
 
@@ -578,23 +562,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const [idMarcaRangoTalla, stock] = selectValue.split("|");
       const newQuantity = row.querySelector(".input-quantity")?.value || 0;
 
+      // MOSTRAR 0 EN LUGAR DE null O VACÍO (stockAnterior)
+      const stockAnterior = parseInt(stock, 10) || 0;
+      const nuevaCantidad = parseInt(newQuantity, 10) || 0;
+
       return {
         idMarcaRangoTalla,
-        stockAnterior: parseInt(stock, 10),
-        nuevaCantidad: parseInt(newQuantity, 10) || 0,
+        stockAnterior,
+        nuevaCantidad
       };
     });
 
-    // Obtener el id del producto desde el dataset de la card
+    // ID del producto y marca
     const productoId = card.dataset.idProducto || "";
 
-    // Retornar todo en un objeto
+    // Retornar todo
     return {
       idProducto: productoId,
       codigo,
       nombre,
-      marcaId,       // Esto es el data-idMarca del producto
-      marcaSelect,   // Valor del <select> de marca
+      marcaSelect,
       categoriaSelect,
       precioCompra,
       precioRegular,
@@ -605,18 +592,46 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Capturamos el botón de "Guardar" y agregamos su listener
-  const saveButton = document.getElementById("save-btn");
-  saveButton.addEventListener("click", async () => {
+  // Botón "Imprimir JSON"
+  const printJsonButton = document.getElementById("print-json-btn");
+  if (!printJsonButton) {
+    console.warn("No se encontró el botón Imprimir JSON (print-json-btn)");
+  }
+
+  printJsonButton?.addEventListener("click", () => {
     const card = document.querySelector(".card");
     if (!card) {
       console.warn("No se encontró la tarjeta (card) para recolectar datos.");
+      alert("No se encontró el formulario del producto");
       return;
     }
 
-    // Recolectar datos
+    // ---------------------------------------------
+    // 1) Verificar si hay algún .btn-save habilitado
+    // ---------------------------------------------
+    const saveButtons = card.querySelectorAll(".btn-save");
+    let anySaveEnabled = false;
+    saveButtons.forEach((btn) => {
+      if (!btn.disabled) {
+        anySaveEnabled = true;
+      }
+    });
+
+    if (anySaveEnabled) {
+      alert("Por favor, guarde todos los cambios antes de imprimir el JSON.");
+      return;
+    }
+
+    // 2) Recolectar datos
     const formData = collectFormData(card);
 
+    // 3) Mostrar en consola y en un alert
+    console.log("Datos recolectados:", formData);
+    console.log("Datos recolectados:\n" + JSON.stringify(formData, null, 2));
+    alert("Datos recolectados:\n" + JSON.stringify(formData, null, 2));
+
+    // (El resto del fetch/guardado real está comentado para pruebas)
+    /*
     try {
       const response = await fetch('/guardar_producto', {
         method: 'POST',
@@ -625,9 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: JSON.stringify(formData)
       });
-
       const result = await response.json();
-
       if (result.success) {
         alert('Producto guardado exitosamente');
       } else {
@@ -635,7 +648,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Ocurrió un error al intentar guardar el producto');
+      alert('Ocurrió un error al intentar guardar el producto. Por favor, intente nuevamente.');
+    } finally {
+      // Restaurar estado del botón si fuera necesario
     }
+    */
   });
 });
+
