@@ -30,7 +30,6 @@
       <h1 class="page-title text-center">Buscador de Productos</h1>
 
       <!-- NUEVO CONTENEDOR CON LOS DOS BOTONES PRINCIPALES -->
-
       <div class="search-container card">
         <div class="p-4">
           <div class="row justify-content-center">
@@ -38,7 +37,10 @@
               <button class="btn btn-custom btn-sm" onclick="ingresarManual()">
                 <i class="fas fa-edit"></i>Ingresar Manual
               </button>
-              <button class="btn btn-custom btn-sm" onclick="registroAutomatico()">
+              <button
+                class="btn btn-custom btn-sm"
+                onclick="registroAutomatico()"
+              >
                 <i class="fas fa-ruler me-2"></i>Registro Automático
               </button>
             </div>
@@ -47,7 +49,11 @@
       </div>
 
       <!-- Search Section (OCULTO AL INICIO) -->
-      <div id="search-container" class="search-container card" style="display: none">
+      <div
+        id="search-container"
+        class="search-container card"
+        style="display: none"
+      >
         <div class="card-body p-4">
           <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
@@ -100,13 +106,18 @@
       </div>
 
       <!-- Tallas Form Section (formulario) -->
-      <div id="tallasContainer" class="image-container card" style="display: none">
+      <div
+        id="tallasContainer"
+        class="image-container card"
+        style="display: none"
+      >
         <div class="card-body">
           <h2 class="mb-4" style="color: #2d3748; font-weight: 600">
             Registrar Tallas
           </h2>
 
-          <div class="row g-4 mb-4">
+          <!-- Bloque de imagen: ocultar o mostrar según modo -->
+          <div id="rowImagen" class="row g-4 mb-4 mt-3" style="display: none">
             <div class="col-md-12">
               <div id="imageInputContainer" class="form-floating">
                 <div class="input-group">
@@ -116,38 +127,58 @@
                     id="imagenProducto"
                     accept="image/*"
                     capture="environment"
+                    placeholder="Seleccione una imagen"
                   />
-                  <label class="input-group-text" for="imagenProducto">
-                    <i class="fas fa-camera"></i>
-                  </label>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="row g-4 mb-4">
+          <div class="row g-4 mb-3">
             <div class="col-md-3">
               <div class="form-floating">
-                <input type="text" id="codigoManual" class="form-control form-control-sm" />
-                <label>Código del Producto</label>
+                <input
+                  type="text"
+                  id="codigoManual"
+                  class="form-control form-control-sm"
+                  placeholder="Código del producto"
+                />
+                <label for="codigoManual">Código del Producto</label>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-floating">
-                <select id="categoriaSelect" class="form-select"></select>
-                <label>Categoría</label>
+                <select
+                  id="categoriaSelect"
+                  class="form-select"
+                  aria-label="Seleccione una categoría"
+                >
+                  <option value="" hidden>Seleccione una categoría</option>
+                </select>
+                <label for="categoriaSelect">Categoría</label>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-floating">
-                <input type="text" id="modeloInput" class="form-control form-control-sm" />
-                <label>Modelo</label>
+                <input
+                  type="text"
+                  id="modeloInput"
+                  class="form-control form-control-sm"
+                  placeholder="Ingrese modelo"
+                />
+                <label for="modeloInput">Modelo</label>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-floating">
-                <select id="marcaSelect" class="form-select"></select>
-                <label>Marca</label>
+                <select
+                  id="marcaSelect"
+                  class="form-select"
+                  aria-label="Seleccione una marca"
+                >
+                  <option value="" hidden>Seleccione una marca</option>
+                </select>
+                <label for="marcaSelect">Marca</label>
               </div>
             </div>
           </div>
@@ -161,8 +192,9 @@
                   id="precioRetail"
                   class="form-control form-control-sm"
                   step="0.01"
+                  placeholder="Precio Retail"
                 />
-                <label>Precio Retail</label>
+                <label for="precioRetail">Precio Retail</label>
               </div>
             </div>
             <div class="col-md-4">
@@ -172,8 +204,9 @@
                   id="precioRegular"
                   class="form-control form-control-sm"
                   step="0.01"
+                  placeholder="Precio Regular"
                 />
-                <label>Precio Regular</label>
+                <label for="precioRegular">Precio Regular</label>
               </div>
             </div>
             <div class="col-md-4">
@@ -183,8 +216,9 @@
                   id="precioOnline"
                   class="form-control form-control-sm"
                   step="0.01"
+                  placeholder="Precio Online"
                 />
-                <label>Precio Online</label>
+                <label for="precioOnline">Precio Online</label>
               </div>
             </div>
           </div>
@@ -197,8 +231,9 @@
                   id="precioCompra"
                   class="form-control form-control-sm"
                   step="0.01"
+                  placeholder="Precio de Compra"
                 />
-                <label>Precio de Compra</label>
+                <label for="precioCompra">Precio de Compra</label>
               </div>
             </div>
             <div class="col-md-6">
@@ -208,8 +243,9 @@
                   id="precioPromocion"
                   class="form-control form-control-sm"
                   step="0.01"
+                  placeholder="Precio Promoción (opcional)"
                 />
-                <label>Precio Promoción (opcional)</label>
+                <label for="precioPromocion">Precio Promoción (opcional)</label>
               </div>
             </div>
           </div>
@@ -218,14 +254,24 @@
           <div class="row g-4 mb-4">
             <div class="col-md-6">
               <div class="form-floating">
-                <input type="date" id="fechaInicioPromo" class="form-control form-control-sm" />
-                <label>Fecha Inicio Promoción</label>
+                <input
+                  type="date"
+                  id="fechaInicioPromo"
+                  class="form-control form-control-sm"
+                  placeholder="Fecha Inicio Promoción"
+                />
+                <label for="fechaInicioPromo">Fecha Inicio Promoción</label>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-floating">
-                <input type="date" id="fechaFinPromo" class="form-control form-control-sm" />
-                <label>Fecha Fin Promoción</label>
+                <input
+                  type="date"
+                  id="fechaFinPromo"
+                  class="form-control form-control-sm"
+                  placeholder="Fecha Fin Promoción"
+                />
+                <label for="fechaFinPromo">Fecha Fin Promoción</label>
               </div>
             </div>
           </div>
@@ -238,10 +284,16 @@
           >
             <div class="col-md-12 mb-4 mt-4">
               <div class="form-floating mb-4">
-                <select id="tallasSelect" class="form-select">
-                  <option value="">Seleccione una clasificación</option>
+                <select
+                  id="tallasSelect"
+                  class="form-select"
+                  disabled
+                  aria-label="Seleccione una clasificación de tallas"
+                  placeholder="Seleccione una clasificación"
+                >
+                  <option value="" hidden>Seleccione una clasificación</option>
                 </select>
-                <label>Clasificación de Tallas</label>
+                <label for="tallasSelect">Clasificación de Tallas</label>
               </div>
 
               <div class="table-responsive">

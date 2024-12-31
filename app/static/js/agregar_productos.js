@@ -1,28 +1,50 @@
+
 // Variable global para almacenar los datos del producto
 var productData = null;
 // Objeto para almacenar las tallas obtenidas según la marca y clasificación
 let tallasData = {};
+// Variable para saber si estamos en modo Manual (true) o Automático (false)
+let modoManual = false;
 
 /**
  * NUEVA FUNCIÓN para flujo de "Registro Automático"
- * - Oculta la tabla y el formulario (si estuvieran visibles)
+ * - Oculta el contenedor de resultados y el formulario (si estuvieran visibles)
  * - Muestra el buscador
+ * - Oculta el bloque de imagen
  */
 function registroAutomatico() {
-    // Ocultamos el contenedor de resultados y el formulario, por si estaban abiertos
-    document.getElementById('resultContainer').style.display = 'none';
+    modoManual = false;
+    // Ocultamos contenedores
     document.getElementById('tallasContainer').style.display = 'none';
+    document.getElementById('resultContainer').style.display = 'none';
 
     // Mostramos la sección de búsqueda
     document.getElementById('search-container').style.display = 'block';
+
+    // Ocultar el bloque de imagen en el formulario
+    document.getElementById('rowImagen').style.display = 'none';
 }
 
 /**
  * Función para ingresar manualmente
- * (Tú decides cómo manejar este flujo, por ahora un alert)
+ * - Muestra directamente el contenedor de tallasContainer (sin buscar)
+ * - Oculta contenedor de resultados y buscador
+ * - Muestra el bloque de imagen
  */
 function ingresarManual() {
-    alert('Función de ingreso manual - En desarrollo');
+    modoManual = true;
+    // Ocultar buscador y resultados
+    document.getElementById('search-container').style.display = 'none';
+    document.getElementById('resultContainer').style.display = 'none';
+
+    // Mostrar el formulario de tallas
+    document.getElementById('tallasContainer').style.display = 'block';
+
+    // Mostrar el bloque de la imagen
+    document.getElementById('rowImagen').style.display = 'block';
+
+    // Limpiar el campo "codigoManual"
+    document.getElementById('codigoManual').value = '';
 }
 
 /**
@@ -81,10 +103,17 @@ async function buscarProducto() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('resultContainer').style.display = 'block';
 
-            // AHORA se oculta el buscador y se muestra directamente el formulario
+            // Ocultamos el buscador y mostramos directamente el formulario
             document.getElementById('search-container').style.display = 'none';
             document.getElementById('tallasContainer').style.display = 'block';
 
+            // Si estamos en modo automático, NO mostramos el bloque de imagen
+            // y rellenamos el codigoManual con el código del producto.
+            if (!modoManual) {
+                document.getElementById('rowImagen').style.display = 'none';
+            }
+            // Rellenamos el campo 'codigoManual' con el código
+            document.getElementById('codigoManual').value = productData.codigo;
             // Rellenamos el campo 'modeloInput' con el nombre del producto
             document.getElementById('modeloInput').value = productData.nombre;
         } else {
@@ -102,7 +131,7 @@ async function buscarProducto() {
 function llenarSelectores(data) {
     // Selector de categorías
     const categoriaSelect = document.getElementById('categoriaSelect');
-    categoriaSelect.innerHTML = '<option value="">Seleccione una categoría</option>';
+    categoriaSelect.innerHTML = '<option value="" hidden>Seleccione una categoría</option>';
     data.categorias.forEach(categoria => {
         const option = document.createElement('option');
         option.value = categoria.ID_CATEGORIA;
@@ -112,7 +141,7 @@ function llenarSelectores(data) {
 
     // Selector de marcas
     const marcaSelect = document.getElementById('marcaSelect');
-    marcaSelect.innerHTML = '<option value="">Seleccione una marca</option>';
+    marcaSelect.innerHTML = '<option value="" hidden>Seleccione una marca</option>';
     data.marcas.forEach(marca => {
         const option = document.createElement('option');
         option.value = marca.ID_MARCA;
@@ -122,7 +151,7 @@ function llenarSelectores(data) {
 
     // Selector de clasificaciones
     const tallasSelect = document.getElementById('tallasSelect');
-    tallasSelect.innerHTML = '<option value="">Seleccione un rango de edad</option>';
+    tallasSelect.innerHTML = '<option value="" hidden>Seleccione una clasificación</option>';
     data.clasificaciones.forEach(clasificacion => {
         const option = document.createElement('option');
         option.value = clasificacion.DESCRIPCION.toLowerCase();
@@ -213,7 +242,7 @@ async function obtenerTallasPorMarca(event) {
             data.tallas_por_rango.forEach(item => {
                 // ej: item.rango_edad => "NIÑO", "ADULTO", etc.
                 const key = item.rango_edad.toLowerCase();
-                tallasData[key] = item.tallas; 
+                tallasData[key] = item.tallas;
             });
 
             // Resetear el select y la tabla
@@ -284,8 +313,7 @@ function cancelarTallas() {
 
     limpiarFormularioPrecios();
 
-    // Aquí podrías opcionalmente volver a la pantalla de opciones:
-    // document.getElementById('opcionesPrincipales').scrollIntoView();
+    // Opcional: podrías redirigir a la pantalla principal o lo que necesites
 }
 
 /**
@@ -316,6 +344,7 @@ async function guardarTallas() {
         const categoria = document.getElementById("categoriaSelect")?.value;
         const modelo = document.getElementById("modeloInput")?.value;
         const marca = document.getElementById("marcaSelect")?.value;
+        const codigoManual = document.getElementById("codigoManual")?.value;
 
         if (!categoria || !modelo || !marca) {
             alert('Error: Faltan elementos básicos del formulario (categoría, modelo o marca).');
@@ -323,13 +352,13 @@ async function guardarTallas() {
         }
 
         // 2. Obtener precios
-        const precioRetail   = parseFloat(document.getElementById('precioRetail')?.value)   || 0;
-        const precioRegular  = parseFloat(document.getElementById('precioRegular')?.value)  || 0;
-        const precioOnline   = parseFloat(document.getElementById('precioOnline')?.value)   || 0;
-        const precioCompra   = parseFloat(document.getElementById('precioCompra')?.value)   || 0;
+        const precioRetail = parseFloat(document.getElementById('precioRetail')?.value) || 0;
+        const precioRegular = parseFloat(document.getElementById('precioRegular')?.value) || 0;
+        const precioOnline = parseFloat(document.getElementById('precioOnline')?.value) || 0;
+        const precioCompra = parseFloat(document.getElementById('precioCompra')?.value) || 0;
         const precioPromocion = parseFloat(document.getElementById('precioPromocion')?.value) || null;
         const fechaInicioPromo = document.getElementById('fechaInicioPromo')?.value || null;
-        const fechaFinPromo   = document.getElementById('fechaFinPromo')?.value   || null;
+        const fechaFinPromo = document.getElementById('fechaFinPromo')?.value || null;
 
         if (!precioRetail || !precioRegular || !precioOnline || !precioCompra) {
             alert('Los precios (retail, regular, online y de compra) son obligatorios.');
@@ -372,23 +401,29 @@ async function guardarTallas() {
             }
         }
 
-        // 4. Ajustar el código del producto (si es que usas productData)
-        let codigoFiltrado = '';
-        if (productData?.codigo) {
-            codigoFiltrado = productData.codigo.trim();
-            const espacioIndex = codigoFiltrado.indexOf(' ');
+        // 4. Determinar el código a guardar:
+        //    Si estamos en modo automático, usamos productData.codigo (si existe),
+        //    caso contrario usamos lo que está en #codigoManual (modo manual).
+        let codigoFinal = '';
+        if (!modoManual && productData?.codigo) {
+            // Quitar espacios adicionales
+            codigoFinal = productData.codigo.trim();
+            const espacioIndex = codigoFinal.indexOf(' ');
             if (espacioIndex !== -1) {
-                codigoFiltrado = codigoFiltrado.substring(0, espacioIndex);
+                codigoFinal = codigoFinal.substring(0, espacioIndex);
             }
         } else {
-            // O puedes tomarlo del input #codigoManual si no quieres depender de productData
-            alert('El código del producto no está definido en productData.');
-            return;
+            // Modo manual o no tenemos productData
+            if (!codigoManual) {
+                alert('Por favor, ingrese el código del producto.');
+                return;
+            }
+            codigoFinal = codigoManual.trim();
         }
 
         // 5. Armar el objeto con toda la info
         const datosProducto = {
-            codigo: codigoFiltrado,
+            codigo: codigoFinal,
             nombre: modelo,
             idCategoria: parseInt(categoria),
             idMarca: parseInt(marca),
