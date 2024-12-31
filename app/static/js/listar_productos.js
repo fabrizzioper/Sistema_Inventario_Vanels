@@ -34,15 +34,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
   llenarSelectColumnas();
 
-  // Función para renderizar productos
+  
   function renderProductos(productosFiltrados) {
     productosList.innerHTML = ""; // Limpiar la tabla antes de renderizar
 
     productosFiltrados.forEach((producto) => {
-      const mainRow = document.createElement("tr");
+      // 1. Filtrar tallas con stock > 0
+      const tallasConStock = producto.tallas.filter((t) => t.cantidad > 0);
 
+      // 2. Si tallasConStock está vacío, significa que todas las tallas del producto tienen 0
+      if (tallasConStock.length === 0) {
+        // Mostramos una sola fila con “No hay stock”
+        const noStockRow = document.createElement("tr");
+
+        // El ROWSPAN será de 1, pero si quieres que ocupe el "espacio" de tallas, 
+        // usas 1 para que no genere filas extras.
+        noStockRow.innerHTML = `
+          <td><img
+              src="${producto.imagen_url}"
+              alt="${producto.nombre}"
+              class="product-img img-fluid rounded"
+              style="max-width: 150px; height: auto;"
+          /></td>
+          <td>${producto.codigo || "N/A"}</td>
+          <td>${producto.nombre}</td>
+          <td>${producto.marca}</td>
+          <td>${producto.precios.retail ? `S/${producto.precios.retail}` : "N/A"}</td>
+          <td>${producto.precios.regular ? `S/${producto.precios.regular}` : "N/A"}</td>
+          <td>${producto.precios.online ? `S/${producto.precios.online}` : "N/A"}</td>
+          <td>-</td>  <!-- Talla EUR -->
+          <td>-</td>  <!-- Talla USA -->
+          <td>-</td>  <!-- Talla CM -->
+          <td>No hay stock</td>
+        `;
+
+        productosList.appendChild(noStockRow);
+        return; // Pasar al siguiente producto
+      }
+
+      // 3. Si hay tallas con stock > 0, las mostramos cada una en su propia fila,
+      //    con la PRIMERA fila conteniendo la imagen/datos básicos (rowspan).
+      // Calcular ROWSPAN = número de tallas con stock
+      const rowSpan = tallasConStock.length;
+
+      // Crear fila principal
+      const mainRow = document.createElement("tr");
+      // Insertamos celdas con ROWSPAN
       mainRow.innerHTML = `
-        <td rowspan="${producto.tallas.length}">
+        <td rowspan="${rowSpan}">
           <img
             src="${producto.imagen_url}"
             alt="${producto.nombre}"
@@ -50,15 +89,16 @@ document.addEventListener("DOMContentLoaded", () => {
             style="max-width: 150px; height: auto;"
           />
         </td>
-        <td rowspan="${producto.tallas.length}">${producto.codigo || "N/A"}</td>
-        <td rowspan="${producto.tallas.length}">${producto.nombre}</td>
-        <td rowspan="${producto.tallas.length}">${producto.marca}</td>
-        <td rowspan="${producto.tallas.length}">${producto.precios.retail ? `S/${producto.precios.retail}` : "N/A"}</td>
-        <td rowspan="${producto.tallas.length}">${producto.precios.regular ? `S/${producto.precios.regular}` : "N/A"}</td>
-        <td rowspan="${producto.tallas.length}">${producto.precios.online ? `S/${producto.precios.online}` : "N/A"}</td>
+        <td rowspan="${rowSpan}">${producto.codigo || "N/A"}</td>
+        <td rowspan="${rowSpan}">${producto.nombre}</td>
+        <td rowspan="${rowSpan}">${producto.marca}</td>
+        <td rowspan="${rowSpan}">${producto.precios.retail ? `S/${producto.precios.retail}` : "N/A"}</td>
+        <td rowspan="${rowSpan}">${producto.precios.regular ? `S/${producto.precios.regular}` : "N/A"}</td>
+        <td rowspan="${rowSpan}">${producto.precios.online ? `S/${producto.precios.online}` : "N/A"}</td>
       `;
 
-      const firstSize = producto.tallas[0];
+      // Añadir la primera talla con stock
+      const firstSize = tallasConStock[0];
       mainRow.innerHTML += `
         <td>${firstSize.talla_eur || "N/A"}</td>
         <td>${firstSize.talla_usa || "N/A"}</td>
@@ -68,21 +108,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       productosList.appendChild(mainRow);
 
-      for (let i = 1; i < producto.tallas.length; i++) {
-        const talla = producto.tallas[i];
+      // 4. Para las tallas restantes, creamos filas extras
+      for (let i = 1; i < tallasConStock.length; i++) {
+        const talla = tallasConStock[i];
         const sizeRow = document.createElement("tr");
-
         sizeRow.innerHTML = `
           <td>${talla.talla_eur || "N/A"}</td>
           <td>${talla.talla_usa || "N/A"}</td>
           <td>${talla.talla_cm || "N/A"}</td>
           <td>${talla.cantidad || "N/A"}</td>
         `;
-
         productosList.appendChild(sizeRow);
       }
     });
   }
+
 
   // Filtrar productos en tiempo real por todas las columnas
   function filtrarPorTodasLasColumnas() {
