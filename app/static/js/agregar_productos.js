@@ -1,6 +1,33 @@
+// Variable global para almacenar los datos del producto
 var productData = null;
+// Objeto para almacenar las tallas obtenidas según la marca y clasificación
 let tallasData = {};
 
+/**
+ * NUEVA FUNCIÓN para flujo de "Registro Automático"
+ * - Oculta la tabla y el formulario (si estuvieran visibles)
+ * - Muestra el buscador
+ */
+function registroAutomatico() {
+    // Ocultamos el contenedor de resultados y el formulario, por si estaban abiertos
+    document.getElementById('resultContainer').style.display = 'none';
+    document.getElementById('tallasContainer').style.display = 'none';
+
+    // Mostramos la sección de búsqueda
+    document.getElementById('search-container').style.display = 'block';
+}
+
+/**
+ * Función para ingresar manualmente
+ * (Tú decides cómo manejar este flujo, por ahora un alert)
+ */
+function ingresarManual() {
+    alert('Función de ingreso manual - En desarrollo');
+}
+
+/**
+ * Función para buscar un producto por código
+ */
 async function buscarProducto() {
     const codigo = document.getElementById('codigoProducto').value;
     if (!codigo) {
@@ -8,7 +35,7 @@ async function buscarProducto() {
         return;
     }
 
-    // Mostrar loading y ocultar resultados anteriores
+    // Mostrar spinner de "Buscando..." y ocultar contenedores
     document.getElementById('loading').style.display = 'block';
     document.getElementById('resultContainer').style.display = 'none';
     document.getElementById('tallasContainer').style.display = 'none';
@@ -25,13 +52,14 @@ async function buscarProducto() {
         const data = await response.json();
 
         if (data.success) {
-            productData = data; // Guardamos los datos del producto
+            // Guardamos la info del producto en variable global
+            productData = data;
 
-            // Limpiar tabla
+            // Limpiamos la tabla de resultados
             const tabla = document.getElementById('resultadoTabla');
             tabla.innerHTML = '';
 
-            // Crear nueva fila
+            // Creamos la fila y las celdas
             const fila = tabla.insertRow();
 
             // Celda de imagen
@@ -49,9 +77,16 @@ async function buscarProducto() {
             const celdaMarca = fila.insertCell();
             celdaMarca.textContent = data.marca;
 
-            // Mostrar resultados y ocultar loading
+            // Ocultamos el spinner y mostramos el contenedor de resultados
             document.getElementById('loading').style.display = 'none';
             document.getElementById('resultContainer').style.display = 'block';
+
+            // AHORA se oculta el buscador y se muestra directamente el formulario
+            document.getElementById('search-container').style.display = 'none';
+            document.getElementById('tallasContainer').style.display = 'block';
+
+            // Rellenamos el campo 'modeloInput' con el nombre del producto
+            document.getElementById('modeloInput').value = productData.nombre;
         } else {
             throw new Error(data.error);
         }
@@ -61,14 +96,11 @@ async function buscarProducto() {
     }
 }
 
-function ingresarManual() {
-    // Aquí irá la lógica para ingresar de manera manual
-    alert('Función de ingreso manual - En desarrollo');
-}
-
-
-// Llenar los selectores con la información de categorías, marcas, clasificaciones
+/**
+ * Llenar los selectores (categoría, marca, clasificaciones) con datos que vienen de Flask
+ */
 function llenarSelectores(data) {
+    // Selector de categorías
     const categoriaSelect = document.getElementById('categoriaSelect');
     categoriaSelect.innerHTML = '<option value="">Seleccione una categoría</option>';
     data.categorias.forEach(categoria => {
@@ -78,6 +110,7 @@ function llenarSelectores(data) {
         categoriaSelect.appendChild(option);
     });
 
+    // Selector de marcas
     const marcaSelect = document.getElementById('marcaSelect');
     marcaSelect.innerHTML = '<option value="">Seleccione una marca</option>';
     data.marcas.forEach(marca => {
@@ -87,6 +120,7 @@ function llenarSelectores(data) {
         marcaSelect.appendChild(option);
     });
 
+    // Selector de clasificaciones
     const tallasSelect = document.getElementById('tallasSelect');
     tallasSelect.innerHTML = '<option value="">Seleccione un rango de edad</option>';
     data.clasificaciones.forEach(clasificacion => {
@@ -97,11 +131,10 @@ function llenarSelectores(data) {
     });
 }
 
-// Función para manejar la petición de /agregar_productos/obtener_datos e inicializar datos
+/**
+ * Inicializar los datos de categorías, marcas, etc.
+ */
 async function inicializarDatosTallas() {
-    // Antes limpiabas tallasData, pero ya no es necesario hacerlo aquí
-    // (lo harás cuando el usuario elija la marca).
-
     try {
         const response = await fetch('/agregar_productos/obtener_datos');
         if (!response.ok) throw new Error('Error HTTP: ' + response.status);
@@ -109,10 +142,8 @@ async function inicializarDatosTallas() {
         const data = await response.json();
 
         if (data.success) {
-            // Llenar selectores de categorías y marcas
+            // Llenar los selectores
             llenarSelectores(data);
-            // Ojo: data.tallas_por_rango ya no lo usaríamos aquí
-            // porque iremos a buscar tallas dinámicamente en otra ruta.
         } else {
             alert('Error al cargar los datos de /obtener_datos.');
         }
@@ -121,15 +152,16 @@ async function inicializarDatosTallas() {
     }
 }
 
-
-// Evento DOMContentLoaded
+/**
+ * Cuando el DOM cargue, llamamos a inicializarDatosTallas()
+ * y asignamos listeners a los selectores que necesiten acciones
+ */
 document.addEventListener('DOMContentLoaded', () => {
     inicializarDatosTallas();
 
     document.getElementById('categoriaSelect')
         .addEventListener('change', handleCategoriaChange);
 
-    // Cuando el usuario cambie de marca, llamamos a obtenerTallasPorMarca
     document.getElementById('marcaSelect')
         .addEventListener('change', obtenerTallasPorMarca);
 
@@ -137,23 +169,16 @@ document.addEventListener('DOMContentLoaded', () => {
         .addEventListener('change', mostrarTallas);
 });
 
-
-function registrarTallas() {
-    if (!productData) {
-        alert('Primero busque un producto.');
-        return;
-    }
-    document.getElementById('modeloInput').value = productData.nombre;
-    document.getElementById('tallasContainer').style.display = 'block';
-}
-
-
-
-
+/**
+ * Manejo del cambio de categoría:
+ * - Si la categoría es ID=1 (por ejemplo, calzado), mostramos el contenedor de tallas
+ * - De lo contrario, ocultamos
+ */
 function handleCategoriaChange(event) {
     const tallasCalzadoContainer = document.getElementById('tallasCalzadoContainer');
     const tallasSelect = document.getElementById('tallasSelect');
 
+    // Supongamos que la categoría "1" corresponde a calzado
     if (event.target.value === '1') {
         tallasCalzadoContainer.style.display = 'block';
         tallasSelect.removeAttribute('disabled');
@@ -165,112 +190,65 @@ function handleCategoriaChange(event) {
     }
 }
 
-
+/**
+ * Obtener tallas según la marca seleccionada (ruta Flask que filtra por marca)
+ */
 async function obtenerTallasPorMarca(event) {
-    const idMarca = event.target.value; // ID_MARCA del <option>
+    const idMarca = event.target.value;
     if (!idMarca) {
-        // Si el usuario selecciona "Seleccione una marca", limpias la tabla:
+        // Si no hay marca seleccionada, limpias la tabla
         tallasData = {};
         document.getElementById('tallasTbody').innerHTML = '';
         return;
     }
 
     try {
-        // Llamar a la ruta Flask que filtra por marca:
         const response = await fetch(`/agregar_productos/obtener_tallas_por_marca/${idMarca}`);
         if (!response.ok) throw new Error('Error HTTP: ' + response.status);
 
         const data = await response.json();
         if (data.success) {
-            // tallas_por_rango = [ {rango_edad, tallas: [{idMarcaRangoTalla, tallaEur}]} ]
             // Reconstruimos tallasData
             tallasData = {};
             data.tallas_por_rango.forEach(item => {
-                // item.rango_edad => "NIÑO", "ADULTO", etc.
+                // ej: item.rango_edad => "NIÑO", "ADULTO", etc.
                 const key = item.rango_edad.toLowerCase();
-                tallasData[key] = item.tallas;
+                tallasData[key] = item.tallas; 
             });
 
-            // Opcional: si quieres resetear el select de rango de edad
+            // Resetear el select y la tabla
             document.getElementById('tallasSelect').value = '';
             document.getElementById('tallasTbody').innerHTML = '';
         } else {
             alert('Error al cargar tallas para la marca seleccionada.');
         }
-
     } catch (error) {
         console.error('Error en obtenerTallasPorMarca:', error);
     }
 }
 
-
-
-// function mostrarTallas() {
-//     const clasificacion = document.getElementById('tallasSelect').value;
-//     const tallasTbody = document.getElementById('tallasTbody');
-//     tallasTbody.innerHTML = '';
-
-//     if (!clasificacion || !tallasData[clasificacion]) return;
-
-//     tallasData[clasificacion].forEach(tallaObj => {
-//         const row = document.createElement('tr');
-//         row.className = 'talla-row';
-
-//         // Guarda ID en data attribute
-//         row.setAttribute('data-id-talla', tallaObj.idMarcaRangoTalla);
-
-//         // Creación de celdas
-//         const tdCheck = document.createElement('td');
-//         const checkbox = document.createElement('input');
-//         checkbox.type = 'checkbox';
-//         checkbox.className = 'talla-checkbox';
-
-//         const tdTalla = document.createElement('td');
-//         tdTalla.textContent = `Talla ${tallaObj.tallaEur}`;
-
-//         const tdCantidad = document.createElement('td');
-//         const cantidadInput = document.createElement('input');
-//         cantidadInput.type = 'number';
-//         cantidadInput.className = 'talla-cantidad';
-//         cantidadInput.min = '0';
-//         cantidadInput.disabled = true;
-//         cantidadInput.placeholder = 'Cantidad';
-
-//         checkbox.addEventListener('change', () => {
-//             cantidadInput.disabled = !checkbox.checked;
-//             if (!checkbox.checked) {
-//                 cantidadInput.value = '';
-//             }
-//         });
-
-//         tdCheck.appendChild(checkbox);
-//         tdCantidad.appendChild(cantidadInput);
-
-//         row.appendChild(tdCheck);
-//         row.appendChild(tdTalla);
-//         row.appendChild(tdCantidad);
-
-//         tallasTbody.appendChild(row);
-//     });
-// }
-
+/**
+ * Mostrar las tallas de acuerdo a la clasificación seleccionada
+ */
 function mostrarTallas() {
     const clasificacion = document.getElementById('tallasSelect').value;
     const tallasTbody = document.getElementById('tallasTbody');
     tallasTbody.innerHTML = '';
 
+    // Si no hay clasificación o no hay datos en tallasData, no hacemos nada
     if (!clasificacion || !tallasData[clasificacion]) return;
 
+    // Generamos las filas con tallas y campos de cantidad
     tallasData[clasificacion].forEach(tallaObj => {
         const row = document.createElement('tr');
         row.className = 'talla-row';
         row.setAttribute('data-id-talla', tallaObj.idMarcaRangoTalla);
 
-        // Celda de talla
+        // Celda de la talla
         const tdTalla = document.createElement('td');
         tdTalla.textContent = `Talla ${tallaObj.tallaEur}`;
 
-        // Celda de cantidad
+        // Celda de la cantidad
         const tdCantidad = document.createElement('td');
         const cantidadInput = document.createElement('input');
         cantidadInput.type = 'number';
@@ -281,13 +259,18 @@ function mostrarTallas() {
 
         tdCantidad.appendChild(cantidadInput);
 
+        // Agregamos las celdas a la fila
         row.appendChild(tdTalla);
         row.appendChild(tdCantidad);
 
+        // Insertamos la fila en el tbody
         tallasTbody.appendChild(row);
     });
 }
 
+/**
+ * Función para cancelar/ocultar el formulario de tallas
+ */
 function cancelarTallas() {
     const tallasContainer = document.getElementById('tallasContainer');
     const tallasCalzadoContainer = document.getElementById('tallasCalzadoContainer');
@@ -300,151 +283,96 @@ function cancelarTallas() {
     if (tallasSelect) tallasSelect.value = '';
 
     limpiarFormularioPrecios();
+
+    // Aquí podrías opcionalmente volver a la pantalla de opciones:
+    // document.getElementById('opcionesPrincipales').scrollIntoView();
 }
 
+/**
+ * Limpiar campos de precios y fechas en el formulario
+ */
 function limpiarFormularioPrecios() {
-    const campos = ['precioRetail', 'precioRegular', 'precioOnline',
-        'precioCompra', 'precioPromocion', 'fechaInicioPromo',
-        'fechaFinPromo'];
-
+    const campos = [
+        'precioRetail',
+        'precioRegular',
+        'precioOnline',
+        'precioCompra',
+        'precioPromocion',
+        'fechaInicioPromo',
+        'fechaFinPromo'
+    ];
     campos.forEach(campo => {
         const elemento = document.getElementById(campo);
         if (elemento) elemento.value = '';
     });
 }
 
-
-
-function validarPrecio(input) {
-    const valor = parseFloat(input.value);
-    if (valor < 0) {
-        alert('El precio no puede ser negativo');
-        input.value = '';
-    }
-}
-
-// Event listeners para la validación de precios
-document.addEventListener('DOMContentLoaded', function () {
-    const preciosInputs = [
-        'precioRetail',
-        'precioRegular',
-        'precioOnline',
-        'precioCompra',
-        'precioPromocion'
-    ];
-
-    preciosInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('change', function () {
-                validarPrecio(this);
-            });
-        }
-    });
-
-    // Event listener para validar fechas de promoción
-    const precioPromocion = document.getElementById('precioPromocion');
-    if (precioPromocion) {
-        precioPromocion.addEventListener('input', function () {
-            const fechaInicio = document.getElementById('fechaInicioPromo');
-            const fechaFin = document.getElementById('fechaFinPromo');
-
-            if (this.value) {
-                fechaInicio.required = true;
-                fechaFin.required = true;
-            } else {
-                fechaInicio.required = false;
-                fechaFin.required = false;
-                fechaInicio.value = '';
-                fechaFin.value = '';
-            }
-        });
-    }
-});
-
-// Nueva función para limpiar los campos de precios
-function limpiarFormularioPrecios() {
-    document.getElementById('precioRetail').value = '';
-    document.getElementById('precioRegular').value = '';
-    document.getElementById('precioOnline').value = '';
-    document.getElementById('precioCompra').value = '';
-    document.getElementById('precioPromocion').value = '';
-    document.getElementById('fechaInicioPromo').value = '';
-    document.getElementById('fechaFinPromo').value = '';
-}
-
-
-
-
-
+/**
+ * Guardar las tallas (y el producto) usando la ruta Flask "/agregar_productos/guardar_productos"
+ */
 async function guardarTallas() {
     try {
-        // 1. Obtener valores básicos
+        // 1. Obtener valores de categoría, modelo, marca
         const categoria = document.getElementById("categoriaSelect")?.value;
         const modelo = document.getElementById("modeloInput")?.value;
         const marca = document.getElementById("marcaSelect")?.value;
 
-        // Verificar que los elementos existen
         if (!categoria || !modelo || !marca) {
-            alert('Error: Faltan elementos básicos del formulario');
+            alert('Error: Faltan elementos básicos del formulario (categoría, modelo o marca).');
             return;
         }
 
         // 2. Obtener precios
-        const precioRetail = parseFloat(document.getElementById('precioRetail')?.value) || 0;
-        const precioRegular = parseFloat(document.getElementById('precioRegular')?.value) || 0;
-        const precioOnline = parseFloat(document.getElementById('precioOnline')?.value) || 0;
-        const precioCompra = parseFloat(document.getElementById('precioCompra')?.value) || 0;
+        const precioRetail   = parseFloat(document.getElementById('precioRetail')?.value)   || 0;
+        const precioRegular  = parseFloat(document.getElementById('precioRegular')?.value)  || 0;
+        const precioOnline   = parseFloat(document.getElementById('precioOnline')?.value)   || 0;
+        const precioCompra   = parseFloat(document.getElementById('precioCompra')?.value)   || 0;
         const precioPromocion = parseFloat(document.getElementById('precioPromocion')?.value) || null;
         const fechaInicioPromo = document.getElementById('fechaInicioPromo')?.value || null;
-        const fechaFinPromo = document.getElementById('fechaFinPromo')?.value || null;
+        const fechaFinPromo   = document.getElementById('fechaFinPromo')?.value   || null;
 
-        // 3. Validar precios obligatorios
         if (!precioRetail || !precioRegular || !precioOnline || !precioCompra) {
-            alert('Los precios retail, regular, online y de compra son obligatorios.');
+            alert('Los precios (retail, regular, online y de compra) son obligatorios.');
             return;
         }
 
-        // Validar datos de promoción
         if (precioPromocion) {
             if (!fechaInicioPromo || !fechaFinPromo) {
                 alert('Si ingresa un precio de promoción, debe ingresar fechas de inicio y fin.');
                 return;
             }
             if (new Date(fechaFinPromo) <= new Date(fechaInicioPromo)) {
-                alert('La fecha de fin de promoción debe ser posterior a la fecha de inicio.');
+                alert('La fecha de fin de promoción debe ser posterior a la de inicio.');
                 return;
             }
         }
 
-        // 4. Recopilar tallas seleccionadas
+        // 3. Recopilar tallas seleccionadas (solo si la categoría es calzado, ID=1)
         const tallas = [];
-        if (categoria === '1') { // CALZADO
+        if (categoria === '1') {
             const tallasRows = document.querySelectorAll('.talla-row');
             tallasRows.forEach(row => {
-                const checkbox = row.querySelector('.talla-checkbox');
+                const idMarcaRangoTalla = row.getAttribute('data-id-talla');
+                const tallaEur = row.querySelector('td:first-child')?.textContent.replace('Talla ', '');
                 const cantidadInput = row.querySelector('.talla-cantidad');
-                if (checkbox?.checked && cantidadInput?.value) {
-                    const idMarcaRangoTalla = row.getAttribute('data-id-talla');
-                    const tallaEur = row.querySelector('td:nth-child(2)')?.textContent.replace('Talla ', '');
 
-                    if (idMarcaRangoTalla) {
-                        tallas.push({
-                            idMarcaRangoTalla: parseInt(idMarcaRangoTalla),
-                            tallaEur,
-                            cantidad: parseInt(cantidadInput.value)
-                        });
-                    }
+                const cantidad = parseInt(cantidadInput.value) || 0;
+                if (cantidad > 0 && idMarcaRangoTalla) {
+                    tallas.push({
+                        idMarcaRangoTalla: parseInt(idMarcaRangoTalla),
+                        tallaEur,
+                        cantidad: cantidad
+                    });
                 }
             });
+
+            if (tallas.length === 0) {
+                alert('Debe ingresar al menos una cantidad mayor a 0 en tallas.');
+                return;
+            }
         }
 
-        if (tallas.length === 0) {
-            alert('Debe seleccionar al menos una talla.');
-            return;
-        }
-
-        // 5. Ajustar el código del producto
+        // 4. Ajustar el código del producto (si es que usas productData)
         let codigoFiltrado = '';
         if (productData?.codigo) {
             codigoFiltrado = productData.codigo.trim();
@@ -453,11 +381,12 @@ async function guardarTallas() {
                 codigoFiltrado = codigoFiltrado.substring(0, espacioIndex);
             }
         } else {
-            alert('El código del producto no está definido.');
+            // O puedes tomarlo del input #codigoManual si no quieres depender de productData
+            alert('El código del producto no está definido en productData.');
             return;
         }
 
-        // 6. Armar y enviar el objeto JSON
+        // 5. Armar el objeto con toda la info
         const datosProducto = {
             codigo: codigoFiltrado,
             nombre: modelo,
@@ -476,6 +405,7 @@ async function guardarTallas() {
             tallas: tallas
         };
 
+        // 6. Enviar datos al servidor
         const response = await fetch('/agregar_productos/guardar_productos', {
             method: 'POST',
             headers: {
@@ -488,16 +418,12 @@ async function guardarTallas() {
 
         if (result.success) {
             alert('Producto guardado exitosamente');
-            cancelarTallas();
+            cancelarTallas(); // Ocultamos el formulario y limpiamos
         } else {
             alert('Error al guardar el producto: ' + result.error);
         }
-
     } catch (error) {
         console.error('Error al procesar el formulario:', error);
         alert('Error al guardar el producto: ' + error.message);
     }
 }
-
-
-
