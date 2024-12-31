@@ -449,16 +449,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const btnEdit = sizeRow.querySelector(".btn-edit");
         const selectSize = sizeRow.querySelector(".select-size");
 
-        const quantity = parseInt(quantityInput.value, 10) || 0;
-        if (quantity < 0) {
-          alert("Ingrese una cantidad válida.");
+        // Parsea la cantidad
+        const quantity = parseInt(quantityInput.value, 10);
+
+        // Si no es un número o es menor a 1, muestra alerta y cancela
+        if (isNaN(quantity) || quantity < 1) {
+          alert("La cantidad para tallas nuevas debe ser mayor a 0.");
           return;
         }
+
+        // Si pasa la validación, deshabilitamos campos
         selectSize.disabled = true;
         quantityInput.disabled = true;
         btnSave.disabled = true;
         btnEdit.disabled = false;
       }
+
 
       // Botón Agregar Talla
       if (target.closest(".btn-add-size")) {
@@ -537,16 +543,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const precioOnline = card.querySelector(".input-online-price")?.value || "";
     const precioPromo = card.querySelector(".input-promo-price")?.value || "";
 
-    // Tallas existentes
+    // --- Tallas Existentes ---
     const existingSizesList = card.querySelectorAll(".existing-sizes-list .size-container");
     const existingSizes = Array.from(existingSizesList).map((row) => {
       const selectValue = row.querySelector(".select-size")?.value || "";
-      const [idMarcaRangoTalla, stock] = selectValue.split("|");
-      const newQuantity = row.querySelector(".input-quantity")?.value || 0;
+      const [idMarcaRangoTalla, stock] = selectValue.split("|") || [null, null];
 
-      // Aseguramos que stockAnterior sea numérico, y si es NaN => 0
+      // Leer el valor que el usuario escribió
+      const quantityVal = row.querySelector(".input-quantity")?.value.trim() ?? "";
+
+      // Definimos nuevaCantidad
+      let nuevaCantidad = null;  // Por defecto, null si el campo está vacío
+
+      if (quantityVal !== "") {
+        // El usuario escribió algo (puede ser '0', '5', etc.)
+        const parsed = parseInt(quantityVal, 10);
+        // Si es NaN, lo dejamos null o puedes poner 0 según tu preferencia
+        nuevaCantidad = isNaN(parsed) ? null : parsed;
+      }
+
+      // stockAnterior
       const stockAnterior = parseInt(stock, 10) || 0;
-      const nuevaCantidad = parseInt(newQuantity, 10) || 0;
 
       return {
         idMarcaRangoTalla,
@@ -555,16 +572,22 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     });
 
-    // Tallas agregadas dinámicamente
+    // --- Tallas Agregadas ---
     const addedSizesList = card.querySelectorAll(".added-sizes-list .size-container");
     const addedSizes = Array.from(addedSizesList).map((row) => {
       const selectValue = row.querySelector(".select-size")?.value || "";
-      const [idMarcaRangoTalla, stock] = selectValue.split("|");
-      const newQuantity = row.querySelector(".input-quantity")?.value || 0;
+      const [idMarcaRangoTalla, stock] = selectValue.split("|") || [null, null];
 
-      // MOSTRAR 0 EN LUGAR DE null O VACÍO (stockAnterior)
+      // Leer el valor que el usuario escribió
+      const quantityVal = row.querySelector(".input-quantity")?.value.trim() ?? "";
+
+      let nuevaCantidad = null;
+      if (quantityVal !== "") {
+        const parsed = parseInt(quantityVal, 10);
+        nuevaCantidad = isNaN(parsed) ? null : parsed;
+      }
+
       const stockAnterior = parseInt(stock, 10) || 0;
-      const nuevaCantidad = parseInt(newQuantity, 10) || 0;
 
       return {
         idMarcaRangoTalla,
@@ -581,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
       idProducto: productoId,
       codigo,
       nombre,
-      marcaSelect,
+      marcaId: marcaSelect,
       categoriaSelect,
       precioCompra,
       precioRegular,
@@ -598,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("No se encontró el botón Imprimir JSON (print-json-btn)");
   }
 
-  printJsonButton?.addEventListener("click", () => {
+  printJsonButton?.addEventListener("click", async () => {
     const card = document.querySelector(".card");
     if (!card) {
       console.warn("No se encontró la tarjeta (card) para recolectar datos.");
@@ -606,9 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ---------------------------------------------
     // 1) Verificar si hay algún .btn-save habilitado
-    // ---------------------------------------------
     const saveButtons = card.querySelectorAll(".btn-save");
     let anySaveEnabled = false;
     saveButtons.forEach((btn) => {
@@ -625,34 +646,88 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2) Recolectar datos
     const formData = collectFormData(card);
 
-    // 3) Mostrar en consola y en un alert
-    console.log("Datos recolectados:", formData);
-    console.log("Datos recolectados:\n" + JSON.stringify(formData, null, 2));
-    alert("Datos recolectados:\n" + JSON.stringify(formData, null, 2));
-
-    // (El resto del fetch/guardado real está comentado para pruebas)
-    /*
+    // --- Descomentar el bloque fetch para guardar en el back ---
     try {
-      const response = await fetch('/guardar_producto', {
-        method: 'POST',
+      const response = await fetch("/vender_productos/guardar_producto", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
+
       const result = await response.json();
       if (result.success) {
-        alert('Producto guardado exitosamente');
+        // Mostrar alert de éxito
+        alert("Producto registrado exitosamente");
+
+        // ================================================
+        // Reiniciar todos los campos y secciones del form
+        // ================================================
+        const productCodeInput = card.querySelector(".input-product-code");
+        const nameInput = card.querySelector(".input-name");
+        const brandSelect = card.querySelector(".input-brand");
+        const categorySelect = card.querySelector(".input-category");
+        const purchasePrice = card.querySelector(".input-purchase-price");
+        const regularPrice = card.querySelector(".input-regular-price");
+        const onlinePrice = card.querySelector(".input-online-price");
+        const promoPrice = card.querySelector(".input-promo-price");
+
+        // Vaciar campo código
+        if (productCodeInput) productCodeInput.value = "";
+
+        // Vaciar campos de texto
+        if (nameInput) nameInput.value = "";
+        if (purchasePrice) purchasePrice.value = "";
+        if (regularPrice) regularPrice.value = "";
+        if (onlinePrice) onlinePrice.value = "";
+        if (promoPrice) promoPrice.value = "";
+
+        // Volver selects a su valor por defecto
+        if (brandSelect) {
+          brandSelect.disabled = false;
+          brandSelect.value = "";
+          brandSelect.disabled = true;
+        }
+        if (categorySelect) {
+          categorySelect.disabled = false;
+          categorySelect.value = "";
+          categorySelect.disabled = true;
+        }
+
+        // Limpiar dataset
+        card.dataset.idMarca = "";
+        card.dataset.idProducto = "";
+
+        // Ocultar secciones
+        const detailsSection = card.querySelector(".details-section");
+        const sizesSection = card.querySelector(".sizes-section");
+        detailsSection.classList.add("d-none");
+        sizesSection.classList.add("d-none");
+
+        // (Opcional) limpiar listas de tallas si quedara algo
+        const existingSizesList = card.querySelector(".existing-sizes-list");
+        const addedSizesList = card.querySelector(".added-sizes-list");
+        if (existingSizesList) existingSizesList.innerHTML = "";
+        if (addedSizesList) addedSizesList.innerHTML = "";
+
+        // (Opcional) Deshabilitar botón Guardar
+        const guardarButton = card.querySelector(".btn-guardar");
+        if (guardarButton) {
+          guardarButton.disabled = true;
+        }
+
       } else {
         alert(`Error al guardar el producto: ${result.message}`);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Ocurrió un error al intentar guardar el producto. Por favor, intente nuevamente.');
+      console.error("Error:", error);
+      alert("Ocurrió un error al intentar guardar el producto. Por favor, intente nuevamente.");
     } finally {
-      // Restaurar estado del botón si fuera necesario
+      // (opcional) restaurar estado de botones, si fuera necesario
     }
-    */
   });
+
+
 });
 
