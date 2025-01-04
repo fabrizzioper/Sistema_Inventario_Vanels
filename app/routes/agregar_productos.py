@@ -1,6 +1,7 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import Blueprint, current_app, json, jsonify, render_template, request
+import requests
 from app.services.agregar_productos import (
     obtener_datos_generales,
     obtener_tallas_por_marca,
@@ -81,10 +82,10 @@ def obtener_tallas_por_marca_endpoint(id_marca):
 #     except Exception as e:
 #         return jsonify({'success': False, 'error': str(e)}), 500
 
-
 @agregar_productos_bp.route('/guardar_productos', methods=['POST'])
 def guardar_producto():
     try:
+        current_app.logger.debug("Iniciando el proceso de guardado del producto.")
         # Obtener datos
         json_data = request.form.get('jsonData')
         if not json_data:
@@ -98,9 +99,10 @@ def guardar_producto():
         if existe:
             raise ValueError("Producto ya registrado")
 
-        # Procesar imagen
+        # Procesar imagen y agregar logs
         archivo = request.files.get('imagenProducto')
         if archivo and data['codigo']:
+            # Caso: Imagen subida manualmente
             filename = secure_filename(f"{data['codigo']}.jpg")
             ruta_imagen_local = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
             os.makedirs(os.path.dirname(ruta_imagen_local), exist_ok=True)
@@ -109,9 +111,38 @@ def guardar_producto():
             data['imagen_url'] = url_imagen
             current_app.logger.debug(f"Imagen guardada en: {ruta_imagen_local}")
             current_app.logger.debug(f"URL de la imagen: {url_imagen}")
+        elif 'imagen_url' in data and data['imagen_url']:
+            # Caso: Imagen obtenida del flujo automático
+            try:
+                # Descargar la imagen desde 'imagen_url'
+                response = requests.get(data['imagen_url'], stream=True)
+                if response.status_code == 200:
+                    filename = secure_filename(f"{data['codigo']}.jpg")
+                    ruta_imagen_local = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    os.makedirs(os.path.dirname(ruta_imagen_local), exist_ok=True)
+                    
+                    with open(ruta_imagen_local, 'wb') as f:
+                        for chunk in response.iter_content(1024):
+                            f.write(chunk)
+                    
+                    # Actualizar 'imagen_url' para apuntar a la imagen guardada localmente
+                    url_imagen = url_for('static', filename=f'images/{filename}')
+                    data['imagen_url'] = url_imagen
+                    current_app.logger.debug(f"Imagen descargada y guardada en: {ruta_imagen_local}")
+                    current_app.logger.debug(f"URL de la imagen: {url_imagen}")
+                else:
+                    raise ValueError(f"Error al descargar la imagen: Status {response.status_code}")
+            except Exception as e:
+                current_app.logger.error(f"Error al descargar la imagen desde 'imagen_url': {str(e)}")
+                # Dependiendo de tus necesidades, podrías decidir si quieres:
+                # - Continuar sin imagen
+                # - O lanzar una excepción para abortar el guardado
+                # Aquí, optaremos por lanzar una excepción
+                raise ValueError(f"No se pudo descargar la imagen desde 'imagen_url': {str(e)}")
         else:
+            # Caso: No se ha subido una imagen y no hay 'imagen_url'
             data['imagen_url'] = None
-            current_app.logger.debug("No se recibió ninguna imagen o falta el código del producto.")
+            current_app.logger.debug("No se recibió ninguna imagen y no hay 'imagen_url' existente.")
 
         # Guardar producto
         resultado = guardar_productos(data)

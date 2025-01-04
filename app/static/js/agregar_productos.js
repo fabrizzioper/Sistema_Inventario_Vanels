@@ -119,6 +119,8 @@ async function buscarProducto() {
             document.getElementById('codigoManual').value = productData.codigo;
             // Rellenamos el campo 'modeloInput' con el nombre del producto
             document.getElementById('modeloInput').value = productData.nombre;
+
+          
         } else {
             throw new Error(data.error || 'Error desconocido');
         }
@@ -467,7 +469,11 @@ async function guardarTallas() {
             formData.append('imagenProducto', frontFile, `${codigoFinal}.jpg`);
         }
 
-        // 7. Enviar datos al servidor
+        // 7. Imprimir datos antes de enviar
+        console.log('Datos del producto:', datosProducto);
+        console.log('Archivo seleccionado:', selectedFile);
+
+        // 8. Enviar datos al servidor
         const response = await fetch('/agregar_productos/guardar_productos', {
             method: 'POST',
             body: formData // Enviamos FormData para incluir la imagen
