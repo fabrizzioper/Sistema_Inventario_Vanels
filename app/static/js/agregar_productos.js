@@ -1,4 +1,3 @@
-
 // Variable global para almacenar los datos del producto
 var productData = null;
 // Objeto para almacenar las tallas obtenidas según la marca y clasificación
@@ -6,8 +5,11 @@ let tallasData = {};
 // Variable para saber si estamos en modo Manual (true) o Automático (false)
 let modoManual = false;
 
+// Variable para guardar el archivo seleccionado
+let selectedFile = null;
+
 /**
- * NUEVA FUNCIÓN para flujo de "Registro Automático"
+ * FUNCIÓN para flujo de "Registro Automático"
  * - Oculta el contenedor de resultados y el formulario (si estuvieran visibles)
  * - Muestra el buscador
  * - Oculta el bloque de imagen
@@ -51,7 +53,7 @@ function ingresarManual() {
  * Función para buscar un producto por código
  */
 async function buscarProducto() {
-    const codigo = document.getElementById('codigoProducto').value;
+    const codigo = document.getElementById('codigoProducto').value.trim();
     if (!codigo) {
         alert('Por favor ingrese un código de producto');
         return;
@@ -89,6 +91,7 @@ async function buscarProducto() {
             const imagen = document.createElement('img');
             imagen.src = data.imagen;
             imagen.alt = 'Producto';
+            imagen.style.width = '100px'; // Ajusta el tamaño según tus necesidades
             celdaImagen.appendChild(imagen);
 
             // Celda de nombre
@@ -117,7 +120,7 @@ async function buscarProducto() {
             // Rellenamos el campo 'modeloInput' con el nombre del producto
             document.getElementById('modeloInput').value = productData.nombre;
         } else {
-            throw new Error(data.error);
+            throw new Error(data.error || 'Error desconocido');
         }
     } catch (error) {
         alert('Error al buscar el producto: ' + error.message);
@@ -196,6 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('tallasSelect')
         .addEventListener('change', mostrarTallas);
+
+    // Escuchar el cambio del input file para guardar el File en selectedFile
+    const fileInput = document.getElementById('imagenProducto');
+    fileInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Lo guardamos en la variable global
+            selectedFile = file;
+        }
+    });
 });
 
 /**
@@ -240,7 +253,7 @@ async function obtenerTallasPorMarca(event) {
             // Reconstruimos tallasData
             tallasData = {};
             data.tallas_por_rango.forEach(item => {
-                // ej: item.rango_edad => "NIÑO", "ADULTO", etc.
+                // Ejemplo: item.rango_edad => "NIÑO", "ADULTO", etc.
                 const key = item.rango_edad.toLowerCase();
                 tallasData[key] = item.tallas;
             });
@@ -337,14 +350,15 @@ function limpiarFormularioPrecios() {
 
 /**
  * Guardar las tallas (y el producto) usando la ruta Flask "/agregar_productos/guardar_productos"
+ * Enviamos todo como FormData (incluida la imagen) para poder renombrarla.
  */
 async function guardarTallas() {
     try {
         // 1. Obtener valores de categoría, modelo, marca
         const categoria = document.getElementById("categoriaSelect")?.value;
-        const modelo = document.getElementById("modeloInput")?.value;
+        const modelo = document.getElementById("modeloInput")?.value.trim();
         const marca = document.getElementById("marcaSelect")?.value;
-        const codigoManual = document.getElementById("codigoManual")?.value;
+        const codigoManual = document.getElementById("codigoManual")?.value.trim();
 
         if (!categoria || !modelo || !marca) {
             alert('Error: Faltan elementos básicos del formulario (categoría, modelo o marca).');
@@ -421,7 +435,7 @@ async function guardarTallas() {
             codigoFinal = codigoManual.trim();
         }
 
-        // 5. Armar el objeto con toda la info
+        // 5. Armar el objeto con toda la info (excepto la imagen, que irá en FormData)
         const datosProducto = {
             codigo: codigoFinal,
             nombre: modelo,
@@ -440,22 +454,38 @@ async function guardarTallas() {
             tallas: tallas
         };
 
-        // 6. Enviar datos al servidor
+        // 6. Crear FormData para enviar tanto el JSON como (opcional) la imagen
+        const formData = new FormData();
+        // Agregamos la info del producto como JSON
+        formData.append('jsonData', JSON.stringify(datosProducto));
+
+        // Si hay un archivo seleccionado, lo renombramos "en el front" como captura.png,
+        // pero en la misma append indicamos que se envíe con nombre "codigoFinal.jpg".
+        if (selectedFile) {
+            const frontFile = new File([selectedFile], 'captura.png', { type: selectedFile.type });
+            // Usar backticks para el template literal
+            formData.append('imagenProducto', frontFile, `${codigoFinal}.jpg`);
+        }
+
+        // 7. Enviar datos al servidor
         const response = await fetch('/agregar_productos/guardar_productos', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(datosProducto)
+            body: formData // Enviamos FormData para incluir la imagen
         });
 
         const result = await response.json();
-
+        console.log(result); // Añadir esta línea para depuración
         if (result.success) {
             alert('Producto guardado exitosamente');
-            cancelarTallas(); // Ocultamos el formulario y limpiamos
+            // Reiniciar todo => recargar la página
+            window.location.reload();
         } else {
-            alert('Error al guardar el producto: ' + result.error);
+            // Si hay error, chequear si es "Producto ya registrado"
+            if (result.error === 'Producto ya registrado') {
+                alert('El producto con ese código ya existe en la base de datos.');
+            } else {
+                alert('Error al guardar el producto: ' + result.error);
+            }
         }
     } catch (error) {
         console.error('Error al procesar el formulario:', error);
